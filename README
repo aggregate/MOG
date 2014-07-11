@@ -1,0 +1,121 @@
+20101122 alpha test release
+
+
+This is a ***VERY*** preliminary alpha test release of the MIPS-based MOG.
+We do not suggest that it is useful for anything but getting a feel for how
+the system works, and THIS VERSION SHOULD NOT BE REDISTRIBUTED, but it will
+soon be followed by a useful version.
+
+The original MOG versions were all based on a stack instruction set, which
+proved too difficult for other compilers to target. There were about 70K
+lines of source code in that system -- and about two dozen different
+versions trying a wide variety of optimization methods.  Some of the best
+of the methods tried are reported in our LCPC 2009 paper:
+
+http://www.springerlink.com/content/x3k8k3uw7j42j553/
+
+For now, that's the reference to cite.
+
+The best of those methods is essentially what the new system implements;
+a series of single-instruction interpreters using an ordering that is
+automatically optimized for each application. However, unlike the version
+reported in the LCPC paper, this release uses static analysis rather than
+a runtime trace to collect instruction frequency and pairwise adjacency.
+The optimizer is greatly simplified too.
+
+Like the earlier versions, the MOG interpreter itself is quite simple,
+complicated mostly by a 3-dimensional global memory layout that ensures
+all memory references are free of bank conflicts while avoiding the
+integer multiply that the obvious 2D layout would have needed for the
+address computations.
+
+The new MOG instruction set is accumulator based with general registers.
+This is a very effective model, allowing the accumulator to reside in an
+actual GPU register and dramatically simplifying instruction decoding.
+The "registers" are actually stored in local "shared" memory, again with
+a layout that ensures freedom from banking conflicts, and the compiler's
+effective use of registers thus produces good explicit management of the
+very scarce GPU local memory.
+
+The system currently does not support double-precision floats, because
+we strongly believe it is a mistake to use them (due to a memory layout
+that breaks the banking properties). For several years, we have had
+libraries that facilitate use of pairs of native floats instead.
+
+There are hooks for system calls, but only exit() is really there.
+
+
+INSTALLING THE SYSTEM
+
+Well, there's an AMD64 binary, mog, that traces execution of the dumb
+fact.c code. You may be able to run that....
+
+The real test requires:
+
+1. Installing the .deb packages so that you have a working GCC cross
+   compilation environment for MIPSEL. They "just work" under Ubuntu,
+   and that's why we're using such an old version.
+
+2. Compiling mogas.  Just cc mogas.c -o mogas.
+
+3. Installing a mog directory under ~/NVIDIA_GPU_Computing_SDK/C/src/
+   and building using the usual CUDA development environment.
+
+Yup, you need all the usual CUDA stuff.  An OpenCL version is coming.
+
+
+RUNNING THE SYSTEM
+
+Given all that, the program fact.c can be compiled into fact.as by:
+
+./mogcc fact.c >fact.as
+
+This actually runs GCC for MIPSEL and then translates the MIPS code into
+our MOG instruction set using a series of sed/awk scripts. It's ugly, but
+GCC MIPSEL seems to have a lot of imaginary instructions in its output,
+so a better translator is postponed until we know what the full scope of
+instructions emitted by GCC MIPSEL is. There is a fair amount of stuff
+spewed to stderr while doing this.
+
+The next step is to run the assembler to generate the data files that
+will be compiled into the simulator. For that, simply:
+
+./mogas <fact.as >mog.h
+
+The mog.h name is critical, because it gets compiled into the interpreter.
+
+To build the executable MOG, just type make. If the TRACE flag is set,
+you'll get a tracer; otherwise, you get execution that executes many
+instructions per kernel invocation. Simply run:
+
+~/NVIDIA_GPU_Computing_SDK/C/bin/mog
+
+
+CREDIT (BLAME?)
+
+Except for the .deb files, this code was written by H. Dietz. It is
+free software, but should NOT be redistributed at this time. Thus,
+consider it as being copyrighted with that restriction for now, although
+we will soon change the status to public domain or an attribution-style
+copyright. We have no long-term intention of preventing anyone from using
+this system in any context, including incorporating it under commercial
+products.
+
+As for most of our freely available source code, we make no claims of
+usability, etc., for this system. USE IT AT YOUR OWN RISK.  Later versions
+may have some level of support, but this 20101122 release should be seen
+as a "toy" to let people see what we're doing... so they know we're
+serious about MOG and that it really does work.
+
+The author's contact info is:
+								      \_/		
+Hank Dietz, Professor & James F. Hardymon Chair in Networking     \_/ . 0
+University of Kentucky, Electrical & Computer Engineering Dept.   O-O /v\
+453 F. Paul Anderson Tower                                        /v\// \\
+Lexington, KY 40506-0046                               Parallel  // \\ . )\
+Phone: (859) 257 4701  FAX: (859) 257 3092          Processing  /( . )\-^^
+URL: http://aggregate.org/hankd/                  using Linux    ^^-^^
+
+This software is posted at:
+
+http://aggregate.org/MOG/20101122/

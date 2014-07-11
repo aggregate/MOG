@@ -1,0 +1,109 @@
+#!/bin/bash
+#
+#	Remove dead sr ops
+#	This can only be run AFTER colseg;
+#	it depends on data/text segments having been sorted
+awk '
+BEGIN	{
+	saveds = 0
+	buffer = "f"
+	inst = 0
+	}
+/^ \.text/	{
+	print $0
+	buffer = "t"
+	next
+	}
+/[:]/	{
+	/* A label */
+	if (buffer == "t") {
+		for (i=0; i<inst; ++i) {
+			if (op[i] == "sr") {
+				for (j=i+1; (j<inst)&&(arg[i]!=arg[j]); ++j) ;
+				if ((arg[i] == arg[j]) && (op[j] == "sr")) {
+					/* Not needed */
+					++saveds;
+					print "deadopt eliminates " op[i] " " arg[i] >>"/dev/stderr"
+					op[i] = "dead"
+				}
+			}
+			if (op[i] != "dead") {
+				if (arg[i] == "") {
+					print " " op[i]
+				} else {
+					print " " op[i] " " arg[i]
+				}
+			}
+		}
+		for (i=0; i<(inst+1); ++i) {
+			op[i] = ""
+			arg[i] = ""
+		}
+		inst = 0
+	}
+	print $0
+	next
+	}
+/^ (j|jf|jt) /	{
+	/* A jump */
+	if (buffer == "t") {
+		for (i=0; i<inst; ++i) {
+			if (op[i] == "sr") {
+				for (j=i+1; (j<inst)&&(arg[i]!=arg[j]); ++j) ;
+				if ((arg[i] == arg[j]) && (op[j] == "sr")) {
+					/* Not needed */
+					++saveds;
+					print "deadopt eliminates " op[i] " " arg[i] >>"/dev/stderr"
+					op[i] = "dead"
+				}
+			}
+			if (op[i] != "dead") {
+				if (arg[i] == "") {
+					print " " op[i]
+				} else {
+					print " " op[i] " " arg[i]
+				}
+			}
+		}
+		for (i=0; i<(inst+1); ++i) {
+			op[i] = ""
+			arg[i] = ""
+		}
+		inst = 0
+	}
+	print $0
+	next
+	}
+/^/	{
+	if (buffer == "t") {
+		op[inst] = $1
+		arg[inst] = $2
+		++inst
+	} else {
+		print $0
+	}
+	}
+END	{
+	if (buffer == "t") {
+		for (i=0; i<inst; ++i) {
+			if (op[i] == "sr") {
+				for (j=i+1; (j<inst)&&(arg[i]!=arg[j]); ++j) ;
+				if ((arg[i] == arg[j]) && (op[j] == "sr")) {
+					/* Not needed */
+					++saveds;
+					print "deadopt eliminates " op[i] " " arg[i] >>"/dev/stderr"
+					op[i] = "dead"
+				}
+			}
+			if (op[i] != "dead") {
+				if (arg[i] == "") {
+					print " " op[i]
+				} else {
+					print " " op[i] " " arg[i]
+				}
+			}
+		}
+	}
+	print "deadopt saved " saveds " sr instructions" >>"/dev/stderr"
+	}
+'

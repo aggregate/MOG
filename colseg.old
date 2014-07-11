@@ -1,0 +1,139 @@
+#!/bin/bash
+#
+# colseg
+#
+# collect data and text segement stuff
+#
+t=/tmp/colseg$$
+cat >$t
+#
+# First the .comm stuff
+#
+awk '
+BEGIN	{
+	/* MIPS memory is byte addressed */
+	ADDRUNIT = 4
+	NSYSARGS = 32
+	lc = 0
+	print " .data"
+	/* Predefine NPROC and IPROC */
+	syms["NPROC"] = lc
+	print "NPROC:"
+	print " .word 0"
+	++lc
+	syms["IPROC"] = lc
+	print "IPROC:"
+	print " .word 0"
+	++lc
+	syms["NSYSARGS"] = lc
+	print "NSYSARGS:"
+	print " .word " NSYSARGS
+	++lc
+	syms["ISYSARGS"] = lc
+	print "ISYSARGS:"
+	print " .word " 0
+	++lc
+	syms["SYSARGS"] = lc
+	print "SYSARGS:"
+	print " .space " (NSYSARGS * ADDRUNIT)
+	++lc
+	}
+/^ .comm /	{
+	sym = substr($2, 1, length($2)-1)
+	if (syms[sym] == "") {
+		syms[sym] = lc
+		print sym ":"
+		print " .space " (0+$3)
+	}
+	next
+	}
+/^/	{
+	next
+	}
+' <$t
+#
+# Now the regular data
+#
+awk '
+BEGIN	{
+	indata = "t"
+	}
+/^ .(data|rdata)/	{
+	indata = "t"
+	next
+	}
+/^ .section/	{
+	/* We will guess this is data... */
+	indata = "t"
+	next
+	}
+/^ .text/	{
+	indata = "f"
+	next
+	}
+/^ .word /	{
+	if (indata == "f") {
+		print "colseg found .word in text segment" >>"/dev/stderr"
+	}
+	print " .word " $2
+	next
+	}
+/^ .space /	{
+	if (indata == "f") {
+		print "colseg found .space in text segment" >>"/dev/stderr"
+	}
+	print " .space " $2
+	next
+	}
+/^.*:$/	{
+	if (indata == "t") {
+		print $0
+	}
+	next
+	}
+/^ .comm /	{
+	next
+	}
+/^/	{
+	next
+	}
+END	{
+	/* space for stack */
+	print " .space " 256
+	print "DATASIZE:"
+	}
+' <$t
+#
+# Now the code
+#
+awk '
+BEGIN	{
+	print " .text"
+	print "exit:"
+	print " sys 0"
+	indata = "t"
+	}
+/^ .data/	{
+	indata = "t"
+	next
+	}
+/^ .section/	{
+	/* We will guess this is data... */
+	indata = "t"
+	next
+	}
+/^ .text/	{
+	indata = "f"
+	next
+	}
+/^ .comm /	{
+	next
+	}
+/^/	{
+	if (indata == "f") {
+		print $0
+	}
+	next
+	}
+' <$t
+rm -f $t

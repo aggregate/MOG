@@ -1,0 +1,298 @@
+#!/bin/bash
+t=/tmp/mipscc$$
+#gcc-mipsel-4.1 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
+mips64-linux-gnu-gcc -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
+sed 's/lui.*$28.*//
+s/addiu.*$28,$28.*//
+s/\.option.*//
+
+s/#.*$//
+s/\.previous.*$//
+s/\.ident.*$//
+s/\.file.*$//
+s/\.globl.*$//
+s/\.align.*$//
+s/\.set.*$//
+s/\.cpload.*$//
+s/\.cprestore.*$//
+s/\.size.*$//
+s/\.end.*$//
+s/\.type.*$//
+s/\.frame.*$//
+s/\.mask.*$//
+s/\.fmask.*$//
+s/[ \t]nop[ \t]*$//
+s/\$zero/$0/g
+s/\$at/$1/g
+s/\$v0/$2/g
+s/\$v1/$3/g
+s/\$a0/$4/g
+s/\$a1/$5/g
+s/\$a2/$6/g
+s/\$a3/$7/g
+s/\$t0/$8/g
+s/\$t1/$9/g
+s/\$t2/$10/g
+s/\$t3/$11/g
+s/\$t4/$12/g
+s/\$t5/$13/g
+s/\$t6/$14/g
+s/\$t7/$15/g
+s/\$s0/$16/g
+s/\$s1/$17/g
+s/\$s2/$18/g
+s/\$s3/$19/g
+s/\$s4/$20/g
+s/\$s5/$21/g
+s/\$s6/$22/g
+s/\$s7/$23/g
+s/\$t8/$24/g
+s/\$t9/$25/g
+s/\$k0/$26/g
+s/\$k1/$27/g
+s/\$gp/$28/g
+s/\$sp/$29/g
+s/\$fp/$30/g
+s/\$ra/$31/g
+s/\$\([a-eg-zA-Z_][a-zA-Z_0-9]*\)/DOL_\1/g
+s/,/, /g
+s/\t/ /g
+s/[ ]*$//
+s/  / /g
+/^[ \t]*$/d
+s/%got(\(.*\))(\$28)/%got \1/
+s/%call16(\(.*\))(\$28)/%got \1/
+s/%lo(\(.*\))(\($.*\))/%lo \2/
+' <mips.as |awk --non-decimal-data '
+BEGIN	{
+	mults = "$cannot_pair_with_mult_error"
+	multt = "$cannot_pair_with_mult_error"
+	cmpf = "cannot_pair_with_cfc1_error"
+	nxtlab = 0
+	frame = 0
+	}
+/^ break /	{
+	/* This seems to be used for trap of divide by 0 */
+	next
+	}
+/^ c\.lt\.s /	{
+	cmpf = "sltf"
+	cmp2 = $2
+	cmp3 = $3
+	cmpnot = "bc1t"
+	next
+	}
+/^ c\.le\.s /	{
+	cmpf = "sltf"
+	cmp2 = $3
+	cmp3 = $2
+	cmpnot = "bc1t"
+	next
+	}
+/^ c\.eq\.s /	{
+	cmpf = "eqf"
+	cmp2 = $2
+	cmp3 = $3
+	cmpnot = "bc1t"
+	next
+	}
+/^ (bc1t|bc1f) /	{
+	if (cmpf == "eqf") {
+		if (cmpnot == $1) {
+			print " beq " cmp2 " " cmp3 " " $2
+		} else {
+			print " bne " cmp2 " " cmp3 " " $2
+		}
+	} else {
+		print " " cmpf " $32 " cmp2 " " cmp3
+		if (cmpnot == $1) {
+			print " bne $0, $32, " $2
+		} else {
+			print " beq $0, $32, " $2
+		}
+	}
+	next
+	}
+/^ cfc1 /	{
+	if ($3 != "$31") {
+		print "kcc does not understand this cfc1" >>"/dev/stderr"
+	}
+	print " " cmpf " " $2 " " cmp2 " " cmp3
+	if (cmpnot == "t") {
+		print " xori " $2 " " $2 " " 1
+	}
+	next
+	}
+/^ mul /	{
+	print $0 " happened?" >>"/dev/stderr"
+	next
+	}
+/^ (mult|multu) /	{
+	/* Remove mult, replace when mflo or mfhi... */
+	/* really sloppy, because control flow is */
+	/* not considered, so may not pair correctly */
+	mulop = "mul"
+	mults = $2
+	multt = $3
+	next
+	}
+/^ (div|divu) /	{
+	/* Remove div, replace when mflo or mfhi... */
+	/* really sloppy, because control flow is */
+	/* not considered, so may not pair correctly */
+	mulop = $1
+	mults = $2
+	multt = $3
+	if ($4 != "") {
+		/* Synthetic div instruction? */
+		if ($2 == "$0,") {
+			/* Nope, special case */
+			mults = $3
+			multt = $4
+		} else {
+			/* Yup, do it */
+			print " mov " $2 " " substr($3, 1, length($3)-1)
+			print " " $1 " " $2 " " $4
+		}
+	}
+	next
+	}
+/^ mflo /	{
+	print " " mulop " " $2 ", " mults " " multt
+	next
+	}
+/^ mfhi /	{
+	if (mulop == "div") {
+		print " rem " $2 ", " mults " " multt
+	} else {
+		print " mulhi " $2 ", " mults " " multt
+	}
+	next
+	}
+/^ (mtc1|mfc1) /	{
+	/* Coprocessor is not special */
+	print " mov " $2 " " $3
+	next
+	}
+/^ (ori|addi|addiu) /	{
+	/* Peephole remove op with 0 */
+	if ($4 == "0") next
+	}
+/^ (addu|xor|or) /	{
+	if ($3 == "$0,") {
+		print " li " $2 " " $4
+		next
+	}
+	}
+/^ addiu/	{
+	if ($3 == "$0,") {
+		print " li " $2 " " $4
+	} else {
+		print " li $32, " $4
+		print " addu " $2 " " $3 " $32"
+	}
+	next
+	}
+/^ (xor|or)i /	{
+	if ($3 == "$0,") {
+		print " li " $2 " " $4
+	} else {
+		print " li $32, " $4
+		print " " substr($1, 1, length($1)-1) " " $2 " " $3 " $32"
+	}
+	next
+	}
+/^ andi /	{
+	print " li $32, " $4
+	print " and " $2 " " $3 " $32"
+	next
+	}
+/^ slti /	{
+	print " li $32, " $4
+	print " slt " $2 " " $3 " $32"
+	next
+	}
+/^ sltiu /	{
+	print " li $32, " $4
+	print " sltu " $2 " " $3 " $32"
+	next
+	}
+/^ (sltu|sll|sra|srl|slt) /	{
+	if (substr($4, 1, 1) == "$") {
+		print $0
+	} else {
+		/* Fixes a bug where LCC uses sltu not sltui */
+		print " li $32, " $4
+		print " " $1 " " $2 " " $3 " $32"
+	}
+	next
+	}
+/^ lui/	{
+	print " li " $2 " " ($3 * 65536)
+	next
+	}
+/%(lo|got)/	{
+	/* Remove global offset table junk */
+	print " la " $2 " " $4
+	next
+	}
+/^ [ls]([whb]|bu|hu|wc1) / {
+	print $0
+	next
+	}
+/^ (beq|bne) /	{
+	if ($4 == "1f") {
+		print " " $1 " " $2 " " $3 " MYLOCAL_" nxtlab
+	} else {
+		print $0
+	}
+	next
+	}
+/^.*:$/	{
+	/* Assumes only label on this line */
+	if ($1 == "1:") {
+		print "MYLOCAL_" nxtlab ":"
+		++nxtlab
+	} else {
+		print $1
+	}
+	next
+	}
+/^/	{
+	print $0 " ###"
+	}
+' |awk '
+/^ [ls]([whb]|bu|hu|wc1) / {
+	/* Replace offset computation inside load or store */
+	/* also make c1 stuff no longer special */
+	off = substr($3, 1, index($3, "(")-1)
+	reg = substr($3, index($3, "(")+1)
+	reg = substr(reg, 1, length(reg)-1)
+	op = $1
+	if (op == "lwc1") op = "lw"
+	if (op == "swc1") op = "sw"
+	if (op == "lhu") op = "lh"
+	if (op == "lbu") op = "lb"
+	if (off == "0") {
+		print " " op " " $2 " " reg
+	} else {
+		print " li $32, " off
+		if (reg != "$0") {
+			print " addu $32, $32, " reg
+		}
+		print " " op " " $2 " $32"
+	}
+	if ($1 == "lhu") {
+		print " li $32, 0x0000ffff"
+		print " and " $2 " $32, " substr($2, 1, length($2)-1)
+	}
+	if ($1 == "lbu") {
+		print " li $32, 0x000000ff"
+		print " and " $2 " $32, " substr($2, 1, length($2)-1)
+	}
+	next
+	}
+/^/	{
+	print $0
+	}
+' |./conflow |./twe2acc |./lrsropt |./regmap |./colseg |./deadopt

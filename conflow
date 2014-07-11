@@ -1,0 +1,79 @@
+awk '
+BEGIN	{
+	labnum = 0
+	}
+/^ bne /	{
+	/* Normalize operand order */
+	a = $2
+	b = $3
+	if (b > a) {
+		a = $3
+		b = $2
+	}
+	if (a == b) {
+		/* Unconditional branch? */
+		print " li $32, " $4
+		print " jr $32"
+	} else if (b == "$0,") {
+		/* bne 0 is jt */
+		print " jt " a " " $4
+	} else {
+		/* bne a b is really xor jt */
+		print " xor $32, " a " " substr(b, 1, length(b)-1)
+		print " jt $32, " $4
+	}
+	next
+	}
+/^ beq /	{
+	/* Normalize operand order */
+	a = $2
+	b = $3
+	if (b > a) {
+		a = $3
+		b = $2
+	}
+	if (a == b) {
+		/* Unconditional branch? */
+		print " li $32, " $4
+		print " jr $32"
+	} else if (b == "$0,") {
+		/* beq 0 is jf */
+		print " jf " a " " $4
+	} else {
+		/* bne a b is really xor jt */
+		print " xor $32, " a " " substr(b, 1, length(b)-1)
+		print " jf $32, " $4
+	}
+	next
+	}
+/^ (j|b) /	{
+	if ((substr($2, 1, 1) == "$") && (substr($2, 1, 2) != "$L")) {
+		/* Mutant form, really jr */
+		print " jr " $2
+	} else {
+		print " li $32, " $2
+		print " jr $32"
+	}
+	next
+	}
+/^ jal / {
+	print " .ret L_" labnum
+	print " la $31, L_" labnum
+	print " la $32, " $2
+	print " jr $32"
+	print "L_" labnum ":"
+	++labnum
+	next
+	}
+/^ jalr / {
+	print " .ret L_" labnum
+	print " la $31, L_" labnum
+	print " jr " $2
+	print "L_" labnum ":"
+	++labnum
+	next
+	}
+/^/	{
+	print $0
+	}
+'

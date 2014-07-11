@@ -1,0 +1,124 @@
+# convert 3 register operand forms to accumulator form
+# also gets rid of $ in labels
+awk '
+BEGIN	{
+	}
+/^.*:/	{
+	print $0
+	next
+	}
+/^ (add|sub|or|xor|and|mul|mulhi|rem|remu|div|divu|sra|srl|slt|sltu|sltf|sll) /	{
+	rd = substr($2, 1, length($2)-1)
+	rs = substr($3, 1, length($3)-1)
+	rt = $4
+	print " lr " rs
+	print " " $1 " " rt
+	print " sr " rd
+	next
+	}
+/^ (addu|subu) /	{
+	rd = substr($2, 1, length($2)-1)
+	rs = substr($3, 1, length($3)-1)
+	rt = $4
+	print " lr " rs
+	print " " substr($1, 1, length($1)-1) " " rt
+	print " sr " rd
+	next
+	}
+/^ (add|sub|mul|div)\.s /	{
+	rd = substr($2, 1, length($2)-1)
+	rs = substr($3, 1, length($3)-1)
+	rt = $4
+	print " lr " rs
+	print " " substr($1, 1, 3) "f " rt
+	print " sr " rd
+	next
+	}
+/^ (mov|move) /	{
+	rd = substr($2, 1, length($2)-1)
+	rs = $3
+	print " lr " rs
+	print " sr " rd
+	next
+	}
+/^ cvt\.s\.w /	{
+	rd = substr($2, 1, length($2)-1)
+	rs = $3
+	print " lr " rs
+	print " i2f"
+	print " sr " rd
+	next
+	}
+/^ cvt\.w\.s /	{
+	rd = substr($2, 1, length($2)-1)
+	rs = $3
+	print " lr " rs
+	print " f2i"
+	print " sr " rd
+	next
+	}
+/^ trunc\.w\.s /	{
+	/* ignore $4 temporary */
+	rd = substr($2, 1, length($2)-1)
+	rs = substr($3, 1, length($3)-1)
+	print " lr " rs
+	print " f2i"
+	print " sr " rd
+	next
+	}
+/^ jr /	{
+	print " lr " $2
+	print " j"
+	next
+	}
+/^ jt /	{
+	print " lr " substr($2, 1, length($2)-1)
+	if (substr($3, 1, 1) == "$") {
+		jtflab += 1
+		print " jf JTFLAB_" jtflab
+		print " lr " $3
+		print " j"
+		print "JTFLAB_" jtflab ":"
+	}
+	print " jt " $3
+	next
+	}
+/^ jf /	{
+	print " lr " substr($2, 1, length($2)-1)
+	if (substr($3, 1, 1) == "$") {
+		jtflab += 1
+		print " jt JTFLAB_" jtflab
+		print " lr " $3
+		print " j"
+		print "JTFLAB_" jtflab ":"
+	}
+	print " jf " $3
+	next
+	}
+/^ (li|la) /	{
+	t = $3
+	gsub("[$]", dol, t)
+	print " li " t
+	print " sr " substr($2, 1, length($2)-1)
+	next
+	}
+/^ l([whb]|bu|hu) / {
+	print " lr " $3
+	print " " $1 
+	print " sr " substr($2, 1, length($2)-1)
+	next
+	}	
+/^ s([whb]|bu|hu) / {
+	if ($2 == "$0,") {
+		/* Store of $0 to clear */
+		print " li 0"
+	} else {
+		print " lr " substr($2, 1, length($2)-1)
+	}
+	print " " $1 " " $3
+	next
+	}
+/^/	{
+	print $0
+	}
+'

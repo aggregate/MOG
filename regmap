@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# regmap
+#
+# rename registers to $0, $1, ...
+# float and integer registers are the same
+#
+t=/tmp/mipscc$$
+sed 's/,/ ,/g
+s/\(\$[0-9][0-9]*\)/ %\1 /g
+s/\(\$f[0-9][0-9]*\)/ %\1 /g' >$t'.rname'
+awk '
+BEGIN	{
+	/* Preinstall $sp and $ra */
+	c["$29"] = 0
+	c["$31"] = 0
+	}
+/^/	{
+	for (i=1; i<=NF; ++i) {
+		if (substr($i, 1, 1) == "%") {
+			++c[substr($i, 2)]
+		}
+	}
+	}
+END	{
+	print "$29\t" c["$29"]
+	print "$31\t" c["$31"]
+	j = 2
+	for (i in c) if ((i != "29") && (i != "31")) {
+		n[j] = i
+		++j
+	}
+	for (a=2; a<j; ++a) {
+		for (b=2; b<a; ++b) {
+			if (c[n[a]] > c[n[b]]) {
+				t = n[a]
+				n[a] = n[b]
+				n[b] = t
+			}
+		}
+	}
+	for (a=2; a<j; ++a) {
+		print n[a] "\t" c[n[a]]
+	}
+	}
+' <$t'.rname' |awk '
+BEGIN	{
+	reg = 0
+	}
+/^\$/	{
+	if (done[$1] == "") {
+		print "regmap found register " $1 " was used " $2 " times" >>"/dev/stderr"
+		s[length($1)] = s[length($1)] "s/%\\" $1 "/$"reg"/g\n"
+		done[$1] = reg
+		++reg
+	}
+	next
+	}
+END	{
+	print "regmap found " reg " registers used" >>"/dev/stderr"
+	print "1i .regsused " reg
+	print "s/[ \t][ \t]/ /g"
+	print "s/ ,/,/g"
+	print s[4] s[3] s[2]
+	}
+' >$t'.rname1'
+sed -f $t'.rname1' <$t'.rname'
+rm -f $t'.rname'*

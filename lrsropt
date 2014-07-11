@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+#	Remove redundant lr, sr ops
+awk '
+BEGIN	{
+	savedl = 0
+	saveds = 0
+	}
+/^ lr /	{
+	t = " s" substr($0, 3)
+	if (t == buf) {
+		/* $0 " is not needed" */
+		++savedl
+	} else {
+		print buf
+		buf = $0
+	}
+	next
+	}
+/^ sr /	{
+	t = " l" substr($0, 3)
+	if ((t == buf) || ($0 == buf)) {
+		/* $0 " is not needed" */
+		++saveds
+	} else {
+		print buf
+		buf = $0
+	}
+	next
+	}
+/^/	{
+	print buf
+	buf = $0
+	next
+	}
+END	{
+	print "lrsropt saved " savedl " lr instructions" >>"/dev/stderr"
+	print "lrsropt saved " saveds " sr instructions" >>"/dev/stderr"
+	print buf
+	}
+'
