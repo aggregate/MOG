@@ -5,21 +5,13 @@ int a,b;
 
 int main()
 {
-	a = getchar();
-	putchar((char)a);
+	char pathname[5];
+	pathname[0]='a';
+	pathname[1]='b';
+	pathname[2]='c';
+	pathname[3]='\0';
+	open(pathname,3);
 	exit(0);
-	// putchar('e');
-	// putchar('l');
-	// putchar('l');
-	// putchar('o');
-	// putchar('w');
-	// putchar('o');
-	// putchar('r');
-	// putchar('l');
-	// putchar('d');
-	// putchar('\n');
-  // a = time(98765);
-  // exit(a);
 }
 
 #include "mog_syscall.c"

@@ -123,13 +123,10 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 #define	MEMH(M)		mem[MAR(M)].h[((M)&2)>>1]
 #define	MEMB(M)		mem[MAR(M)].b[(M)&3]
 
-	/*number of arguments for this pe*/
-	register int Nargs = 16;
-
-
 	/*convert argBuf to GPU memory structure*/
-	for(a.i=0; a.i<Nargs; a.i=a.i+sizeof(word_t))
-		MEMI(MOGSYM_SYSARGS+a.i) = hostsysargs->sysarg[IPROC][a.i/sizeof(word_t)].i;
+	// for(a.i=0; a.i<(sizeof(word_t)*MEMI(MOGSYM_NSYSARGS)); a.i=a.i+sizeof(word_t))
+	// 	MEMI(MOGSYM_SYSARGS+a.i) = hostsysargs->sysarg[IPROC][a.i/sizeof(word_t)].i;
+	MEMI(MOGSYM_SYSARGS) = hostsysargs->sysarg[IPROC][0].i;
 
 	/* Reset flags */
 	/*only one for now*/
@@ -172,10 +169,9 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 		alldata->flags.flag[0] = 1;
 	}
 	else { /*convert sysargs back to host format*/
-		Nargs = 32;
-		for(a.i=0; a.i<MEMI(MOGSYM_NSYSARGS*sizeof(word_t)); a.i=a.i+sizeof(word_t)) {
-			hostsysargs->sysarg[IPROC][a.i/sizeof(word_t)].i = MEMI(MOGSYM_SYSARGS+a.i);
-		}
+		hostsysargs->sysarg[IPROC][0].i = MEMI(MOGSYM_NSYSARGS);
+		for(a.i=0; a.i<(sizeof(word_t)*(MEMI(MOGSYM_NSYSARGS))); a.i=a.i+sizeof(word_t))
+			hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1].i = MEMI(MOGSYM_SYSARGS+a.i);
 		++pc;
 		alldata->flags.flag[0] = 0;
 	}
@@ -183,7 +179,7 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 	//TEST
 	// hostsysargs->sysarg[IPROC][0].i = MEMI(MOGSYM_SYSARGS);
 	// hostsysargs->sysarg[IPROC][1].i = MEMI(MOGSYM_SYSARGS+4);
-	// hostsysargs->sysarg[IPROC][2].i = MEMI(MOGSYM_SYSARGS+8);
+//	 hostsysargs->sysarg[IPROC][2].i = MEMI(MOGSYM_NSYSARGS);
 
 	__syncthreads();
 
@@ -505,7 +501,7 @@ main(int argc, char **argv)
 		   If we are doing a debug trace, copy entire data,
 		   else could copy only the flags
 		*/
-	    checkCudaErrors( cudaMemcpy(&(alldata), gpudata, sizeof(flags_t), cudaMemcpyDeviceToHost) );
+		checkCudaErrors( cudaMemcpy(&(alldata), gpudata, sizeof(flags_t), cudaMemcpyDeviceToHost) );
 
 		//test
 		checkCudaErrors( cudaMemcpy(&(hostsysargs), gpusysargs, sizeof(arg_t), cudaMemcpyDeviceToHost) );
@@ -513,40 +509,51 @@ main(int argc, char **argv)
 		if(alldata.flags.flag[0] == 0) {/*if there was a syscall start decoding*/
 			/*copy sysargs back to host*/
 			for(i=0; i<NPROC; i++)	{
-				int sysCallNum = hostsysargs.sysarg[i][0].i;
-				// printf("syscallnum: %i\n",sysCallNum);
-				// printf("status: %i\n",hostsysargs.sysarg[i][1].i);
-				// printf("other: %i\n",hostsysargs.sysarg[i][2].i);
+				int nsysargs = hostsysargs.sysarg[i][0].i;
+				int sysCallNum = hostsysargs.sysarg[i][1].i;
+				printf("nsysargs: %i\n",nsysargs);
+				printf("syscallnum: %i\n",sysCallNum);
+				printf("status: %i\n",hostsysargs.sysarg[i][2].i);
+				printf("other: %i\n",hostsysargs.sysarg[i][3].i);
+				printf("another: %i\n",hostsysargs.sysarg[i][4].i);
 				/*look in argument buffers, decode system call, execute it within some environment,
 				  then return data*/
 				switch(sysCallNum) {
 					case 0: {/*exit()*/
-						int status=hostsysargs.sysarg[i][1].i;
 						done=1;
-						printf("syscallnum: %i\n",sysCallNum);
-						printf("status: %i\n",hostsysargs.sysarg[i][1].i);
-						printf("other: %i\n",hostsysargs.sysarg[i][2].i);
+						//printf("nsysargs: %i\n",nsysargs);
+						//printf("syscallnum: %i\n",sysCallNum);
+						//printf("status: %i\n",hostsysargs.sysarg[i][2].i);
+						//printf("other: %i\n",hostsysargs.sysarg[i][3].i);
 					}
 					break;
 					case 1:	{/*time(time_t *t)*/
 						hostsysargs.sysarg[i][0].i = time(NULL);
-						printf("time: %i\n", hostsysargs.sysarg[i][1].i);
+						printf("time: %i\n", hostsysargs.sysarg[i][2].i);
 					}
 					break;
 					case 2: {/*dup(int filedes)*/
-						int filedes=hostsysargs.sysarg[i][1].i;
+						int filedes=hostsysargs.sysarg[i][2].i;
 						hostsysargs.sysarg[i][0].i = filedes;
 					}
 					break;
 					case 3: {/*putchar(char c)*/
-						char c=(char)hostsysargs.sysarg[i][1].i;
+						char c=(char)hostsysargs.sysarg[i][2].i;
 						putchar(c);
 					}
 					break;
-					case 4: {/*getchar(char c)*/
+					case 4: {/*getchar()*/
 						hostsysargs.sysarg[i][0].i = getchar();
 					}
 					break;
+					case 5: {/*open(const char *pathname, int flags)*/
+						char *pathname = (char *)malloc((nsysargs-2)*sizeof(char));
+						for(int ichar=0; ichar<(nsysargs-2); ++ichar)
+							pathname[ichar] = (char)hostsysargs.sysarg[i][ichar+2].i;
+						printf("pathname: %s\n",pathname);
+					}
+					case 6: {
+					}
 				}
 			}
 			checkCudaErrors( cudaMemcpy(gpusysargs, &(hostsysargs), sizeof(arg_t), cudaMemcpyHostToDevice) );
@@ -559,7 +566,7 @@ main(int argc, char **argv)
 	/* Stop the timer */
 	sdkStopTimer(&timer);
 
-	/* Print the execution time of the emulate function (and it's loop/readback) */
+	/* Print the execution time of the mulate function (and it's loop/readback) */
 	exeTime = sdkGetTimerValue(&timer);
 	printf("\nTotal emulate time (without setup): %.3f s\n",exeTime/1000.0f);
 

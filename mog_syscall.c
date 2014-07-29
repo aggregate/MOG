@@ -1,18 +1,17 @@
 void exit(int status)
 {
-	NSYSARGS = 16;
+	NSYSARGS = 3;
 	*((int *)SYSARGBUF) = EXIT;
-	*((int *)(SYSARGBUF+4)) = status;
-	*((int *)(SYSARGBUF+2*4)) = 555;
+	*((int *)(SYSARGBUF+sizeof(word_t))) = status;
 
 	__asm__("sys 0");
 }
 
 int time(int *t)
 {
-	NSYSARGS = 16;
+	NSYSARGS = 3;
 	*((int *)SYSARGBUF) = TIME;
-	*((int *)SYSARGBUF+4) = t;
+	*((int *)SYSARGBUF+sizeof(word_t)) = (int)t;
 
 	__asm__("sys 0");
 
@@ -21,10 +20,9 @@ int time(int *t)
 
 int dup(int fildes)
 {
-	NSYSARGS = 8;
+	NSYSARGS = 3;
 	*((int *)SYSARGBUF) = DUP;
-	*((int *)(SYSARGBUF+4)) = fildes;
-	*((int *)(SYSARGBUF+2*4)) = 333;
+	*((int *)(SYSARGBUF+sizeof(word_t))) = fildes;
 
 	__asm__("sys 0");
 
@@ -33,15 +31,52 @@ int dup(int fildes)
 
 void putchar(char c)
 {
+	NSYSARGS = 2;
 	*((int *)SYSARGBUF) = PUTCHAR;
-	*((int *)(SYSARGBUF+4)) = c;
+	*((int *)(SYSARGBUF+sizeof(word_t))) = (int)c;
 
 	__asm__("sys 0");
 }
 
 int getchar()
 {
+	NSYSARGS = 2;
 	*((int *)SYSARGBUF) = GETCHAR;
+
+	__asm__("sys 0");
+
+	return (*((int *)16));
+}
+
+int open(const char *pathname, int flags)
+{
+	*((int *)SYSARGBUF) = OPEN;
+
+	//for(NSYSARGS=1; pathname[NSYSARGS]!='\0'; ++NSYSARGS)
+	//	*((int *)SYSARGBUF+(NSYSARGS)*4) = (int)pathname[NSYSARGS-1];
+	NSYSARGS=1;
+	while(pathname[NSYSARGS-1]!='\0')
+	{
+		*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = (int)pathname[NSYSARGS-1];
+		++NSYSARGS;
+	}
+
+	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = (int)'\0'; 
+	++NSYSARGS;
+	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = flags;
+	++NSYSARGS;
+
+	__asm__("sys 0");
+
+	return (*((int *)16));
+}
+
+int read(int fd, void *buf, int count)
+{
+	*((int *)SYSARGBUF) = READ;
+	NSYSARGS=1;
+	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = fd; 
+	++NSYSARGS;
 
 	__asm__("sys 0");
 
