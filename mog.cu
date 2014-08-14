@@ -22,6 +22,10 @@
 #include <math.h>
 #include <time.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 //#include <cutil.h>
 #include <helper_cuda.h>
 #include <helper_timer.h>
@@ -67,6 +71,7 @@ typedef union word_union {
 
 typedef struct flags_struct {
 	int	flag[FLAGS];	/* Flags showing which inst present */
+	int isSyscall[NPROC];
 } flags_t;
 
 #define NSYSARGS_host 20
@@ -124,9 +129,8 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 #define	MEMB(M)		mem[MAR(M)].b[(M)&3]
 
 	/*convert argBuf to GPU memory structure*/
-	// for(a.i=0; a.i<(sizeof(word_t)*MEMI(MOGSYM_NSYSARGS)); a.i=a.i+sizeof(word_t))
-	// 	MEMI(MOGSYM_SYSARGS+a.i) = hostsysargs->sysarg[IPROC][a.i/sizeof(word_t)].i;
-	MEMI(MOGSYM_SYSARGS) = hostsysargs->sysarg[IPROC][0].i;
+	for(a.i=0; a.i<(sizeof(word_t)*MEMI(MOGSYM_NSYSARGS)); a.i=a.i+sizeof(word_t))
+	 	MEMI(MOGSYM_SYSARGS+a.i) = hostsysargs->sysarg[IPROC][a.i/sizeof(word_t)].i;
 
 	/* Reset flags */
 	/*only one for now*/
@@ -166,14 +170,16 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 	/* Is everybody stuck at a syscall? */
 	if (op != OPsys) {
 		/* Nope. */
-		alldata->flags.flag[0] = 1;
+		//alldata->flags.flag[0] = 0;
+		alldata->flags.isSyscall[IPROC] = 0;
 	}
 	else { /*convert sysargs back to host format*/
 		hostsysargs->sysarg[IPROC][0].i = MEMI(MOGSYM_NSYSARGS);
 		for(a.i=0; a.i<(sizeof(word_t)*(MEMI(MOGSYM_NSYSARGS))); a.i=a.i+sizeof(word_t))
 			hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1].i = MEMI(MOGSYM_SYSARGS+a.i);
 		++pc;
-		alldata->flags.flag[0] = 0;
+		//alldata->flags.flag[0] = 1;
+		alldata->flags.isSyscall[IPROC] = 1;
 	}
 
 	//TEST
@@ -385,11 +391,25 @@ status(register const int IPROC)
 	printf("\n");
 }
 
+int alldone(int* done)
+{
+	int total = 0;
+	for(int i=0; i<NPROC; ++i)
+		total += done[i];
+
+	printf("total: %i\n",total);
+	if(total==NPROC)
+		return 1;
+	else 
+		return 0;
+}
+
 int
 main(int argc, char **argv) 
 {
 	register int i, j;
-	int done = 0; //exit() flag
+	//int ndone = 0; //exit() flag
+	int done[NPROC] = {0};
 	data_t *gpudata;
 	arg_t *gpusysargs;
 	dim3 dimBlock(BNPROC, 1, 1);
@@ -506,21 +526,23 @@ main(int argc, char **argv)
 		//test
 		checkCudaErrors( cudaMemcpy(&(hostsysargs), gpusysargs, sizeof(arg_t), cudaMemcpyDeviceToHost) );
 
-		if(alldata.flags.flag[0] == 0) {/*if there was a syscall start decoding*/
+		//if(alldata.flags.flag[0] == 1) {/*if there was a syscall start decoding*/
 			/*copy sysargs back to host*/
-			for(i=0; i<NPROC; i++)	{
-				int nsysargs = hostsysargs.sysarg[i][0].i;
-				int sysCallNum = hostsysargs.sysarg[i][1].i;
-				printf("nsysargs: %i\n",nsysargs);
-				printf("syscallnum: %i\n",sysCallNum);
-				printf("status: %i\n",hostsysargs.sysarg[i][2].i);
-				printf("other: %i\n",hostsysargs.sysarg[i][3].i);
-				printf("another: %i\n",hostsysargs.sysarg[i][4].i);
-				/*look in argument buffers, decode system call, execute it within some environment,
-				  then return data*/
+		for(i=0; i<NPROC; i++)	{
+			int nsysargs = hostsysargs.sysarg[i][0].i;
+			int sysCallNum = hostsysargs.sysarg[i][1].i;
+			// printf("nsysargs: %i\n",nsysargs);
+			// printf("syscallnum: %i\n",sysCallNum);
+			// printf("status: %i\n",hostsysargs.sysarg[i][2].i);
+			// printf("other: %i\n",hostsysargs.sysarg[i][3].i);
+			// printf("another: %i\n",hostsysargs.sysarg[i][4].i);
+			/*look in argument buffers, decode system call, execute it within some environment,
+			  then return data*/
+			if(alldata.flags.isSyscall[i] == 1) {
 				switch(sysCallNum) {
 					case 0: {/*exit()*/
-						done=1;
+						//ndone+=1;
+						done[i]=1;
 						//printf("nsysargs: %i\n",nsysargs);
 						//printf("syscallnum: %i\n",sysCallNum);
 						//printf("status: %i\n",hostsysargs.sysarg[i][2].i);
@@ -534,6 +556,7 @@ main(int argc, char **argv)
 					break;
 					case 2: {/*dup(int filedes)*/
 						int filedes=hostsysargs.sysarg[i][2].i;
+	                    printf("filedes: %i\n",filedes);
 						hostsysargs.sysarg[i][0].i = filedes;
 					}
 					break;
@@ -548,17 +571,45 @@ main(int argc, char **argv)
 					break;
 					case 5: {/*open(const char *pathname, int flags)*/
 						char *pathname = (char *)malloc((nsysargs-2)*sizeof(char));
-						for(int ichar=0; ichar<(nsysargs-2); ++ichar)
+	                                            int ichar;
+						for(ichar=0; ichar<(nsysargs-2); ++ichar)
 							pathname[ichar] = (char)hostsysargs.sysarg[i][ichar+2].i;
-						printf("pathname: %s\n",pathname);
+	                                            int fileflags = hostsysargs.sysarg[i][ichar+2].i;
+						//printf("pathname: %s\nfileflags: %i\n",pathname,fileflags);
+	                                            int ro = open(pathname,fileflags);
+	                                            hostsysargs.sysarg[i][0].i = ro;
+	                                            printf("openfd: %i\n",ro);
 					}
-					case 6: {
+	                break;
+	                case 6: {
+	                        int fd = hostsysargs.sysarg[i][2].i;
+	                        close(fd);
+	                }
+	                break;
+			case 7: {/*int read(int fd, void *buf, int count)*/
+                                int fd = hostsysargs.sysarg[i][2].i;
+                                int count = hostsysargs.sysarg[i][3].i;
 					}
+	                break;
+	                case 8: {/*int write(int fd, const void *buf, int count)*/ 
+	                        int fd = hostsysargs.sysarg[i][2].i;
+	                        int count = hostsysargs.sysarg[i][3].i;
+	                        char buf[count];
+	                        for(int iword=0; iword<count; ++iword)
+	                          buf[iword] = (char)hostsysargs.sysarg[i][iword+4].i;
+	                        printf("count: %i fd: %i buf: %s\n",count,fd,buf);
+                          	write(fd,buf,count);
+	                }
+	                break;
+	                default:
+	                break;
 				}
 			}
-			checkCudaErrors( cudaMemcpy(gpusysargs, &(hostsysargs), sizeof(arg_t), cudaMemcpyHostToDevice) );
 		}
-	} while (!done);
+//		printf("ndone: %i\n",ndone);
+		checkCudaErrors( cudaMemcpy(gpusysargs, &(hostsysargs), sizeof(arg_t), cudaMemcpyHostToDevice) );
+//	} while (ndone<NPROC);
+	} while (!alldone(done));
 #endif
 
 	checkCudaErrors( cudaMemcpy(&(alldata), gpudata, sizeof(data_t), cudaMemcpyDeviceToHost) );

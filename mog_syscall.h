@@ -7,7 +7,9 @@
 #define PUTCHAR 3
 #define GETCHAR 4
 #define OPEN 5
-#define READ 6
+#define CLOSE 6
+#define READ 7
+#define WRITE 8
 
 typedef union word_union {
         float                   f;
@@ -19,6 +21,7 @@ typedef union word_union {
 
 //byte addressing?
 int NSYSARGS;
+int IPROC;
 
 void exit(int status);
 int time(int *t);
@@ -26,4 +29,6 @@ int dup(int fildes);
 void putchar(char c);
 int getchar();
 int open(const char *pathname, int flags);
+int close(int fd);
 int read(int fd, void *buf, int count);
+int write(int fd, int count, const void *buf); 

@@ -15,7 +15,7 @@ int time(int *t)
 
 	__asm__("sys 0");
 
-	return (*((int *)16));
+	return (*((int *)SYSARGBUF));
 }
 
 int dup(int fildes)
@@ -26,7 +26,7 @@ int dup(int fildes)
 
 	__asm__("sys 0");
 
-	return (*((int *)16));
+	return (*((int *)SYSARGBUF));
 }
 
 void putchar(char c)
@@ -45,7 +45,7 @@ int getchar()
 
 	__asm__("sys 0");
 
-	return (*((int *)16));
+	return (*((int *)SYSARGBUF));
 }
 
 int open(const char *pathname, int flags)
@@ -68,17 +68,52 @@ int open(const char *pathname, int flags)
 
 	__asm__("sys 0");
 
-	return (*((int *)16));
+	return (*((int *)SYSARGBUF));
 }
 
-int read(int fd, void *buf, int count)
+int close(int fd)
 {
-	*((int *)SYSARGBUF) = READ;
-	NSYSARGS=1;
+        *((int *)SYSARGBUF) = READ;
+        NSYSARGS=1;
 	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = fd; 
 	++NSYSARGS;
+        return 1;
+}
+
+int read(int fd, int count, void *buf)
+{
+    *((int *)SYSARGBUF) = READ;
+    NSYSARGS=1;
+    *((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = fd; 
+    ++NSYSARGS;
+    *((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = count; 
+    ++NSYSARGS;
+
+    __asm__("sys 0");
+
+    int i=0;
+    while(i<count)
+      *((int *)(buf+i*sizeof(int)))=*((int *)(SYSARGBUF+(i+1)*sizeof(word_t)));
+
+    return 1;
+}
+
+int write(int fd, int count, const void *buf) 
+{
+	*((int *)SYSARGBUF) = WRITE;
+	NSYSARGS=1;
+    *((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = fd;
+    ++NSYSARGS;
+    *((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = count;
+    ++NSYSARGS;
+
+	while(NSYSARGS<(count+3))
+	{
+		*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = *((int *)(buf+(NSYSARGS-3)*sizeof(int)));
+		++NSYSARGS;
+	}
 
 	__asm__("sys 0");
 
-	return (*((int *)16));
+	return (*((int *)SYSARGBUF));
 }
