@@ -22,6 +22,7 @@
 #include <math.h>
 #include <time.h>
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -47,7 +48,7 @@
 #define	WARPMOD(X)	((X)&31)	/* X % WARPSIZE */
 #define	WARPMUL(X)	((X)<<5)	/* X * WARPSIZE */
 
-#define	MAR(X)		(((X)<<3)&~3)	/* X * WARPSIZE / 4 */
+#define	MAR(X)		(((X)&~3)<<3)	/* X * WARPSIZE / 4 */
 
 /*	TIMEOUT can be anything; 1 for TRACE */
 #ifdef	TRACE
@@ -176,7 +177,8 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 	else { /*convert sysargs back to host format*/
 		hostsysargs->sysarg[IPROC][0].i = MEMI(MOGSYM_NSYSARGS);
 		for(a.i=0; a.i<(sizeof(word_t)*(MEMI(MOGSYM_NSYSARGS))); a.i=a.i+sizeof(word_t))
-			hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1].i = MEMI(MOGSYM_SYSARGS+a.i);
+			//hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1].i = MEMI(MOGSYM_SYSARGS+a.i);
+        	memcpy((void *)&hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1], (void *)&mem[MAR(MOGSYM_SYSARGS+a.i)],4);
 		++pc;
 		//alldata->flags.flag[0] = 1;
 		alldata->flags.isSyscall[IPROC] = 1;
@@ -586,18 +588,25 @@ main(int argc, char **argv)
 	                        close(fd);
 	                }
 	                break;
-			case 7: {/*int read(int fd, void *buf, int count)*/
+					case 7: {/*int read(int fd, void *buf, int count)*/
                                 int fd = hostsysargs.sysarg[i][2].i;
+	                			//int fd = open("afile",2);
                                 int count = hostsysargs.sysarg[i][3].i;
+                                //char buf[count];
+                                //read(fd,(void *)(&hostsysargs.sysarg[i][0]),count);
+                                read(fd,(void *)(&hostsysargs.sysarg[i][0]),count);
+                                printf("read: count: %i fd: %i buf: %s\n",count,fd,(char *)(&hostsysargs.sysarg[i][0]));
+            
 					}
 	                break;
 	                case 8: {/*int write(int fd, const void *buf, int count)*/ 
 	                        int fd = hostsysargs.sysarg[i][2].i;
 	                        int count = hostsysargs.sysarg[i][3].i;
 	                        char buf[count];
-	                        for(int iword=0; iword<count; ++iword)
-	                          buf[iword] = (char)hostsysargs.sysarg[i][iword+4].i;
-	                        printf("count: %i fd: %i buf: %s\n",count,fd,buf);
+                            memcpy((void *)buf,(void *)(&hostsysargs.sysarg[i][4]),count);
+//	                        for(int iword=0; iword<count; ++iword)
+//	                          buf[iword] = (char)hostsysargs.sysarg[i][iword+4].i;
+	                        printf("write: count: %i fd: %i buf: %s other: %i %i %i\n",count,fd,buf,buf[0],buf[1],buf[2]);
                           	write(fd,buf,count);
 	                }
 	                break;

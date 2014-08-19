@@ -52,8 +52,6 @@ int open(const char *pathname, int flags)
 {
 	*((int *)SYSARGBUF) = OPEN;
 
-	//for(NSYSARGS=1; pathname[NSYSARGS]!='\0'; ++NSYSARGS)
-	//	*((int *)SYSARGBUF+(NSYSARGS)*4) = (int)pathname[NSYSARGS-1];
 	NSYSARGS=1;
 	while(pathname[NSYSARGS-1]!='\0')
 	{
@@ -80,7 +78,7 @@ int close(int fd)
         return 1;
 }
 
-int read(int fd, int count, void *buf)
+int read(int fd, void *buf, int count)
 {
     *((int *)SYSARGBUF) = READ;
     NSYSARGS=1;
@@ -91,27 +89,30 @@ int read(int fd, int count, void *buf)
 
     __asm__("sys 0");
 
-    int i=0;
-    while(i<count)
-      *((int *)(buf+i*sizeof(int)))=*((int *)(SYSARGBUF+(i+1)*sizeof(word_t)));
+    memcpy((void *)buf,(void *)SYSARGBUF,count);
+//    int i=0;
+//    while(i<count)
+//      *((int *)(buf+i*sizeof(int))) = *((int *)(SYSARGBUF+(i+1)*sizeof(word_t)));
 
     return 1;
 }
 
-int write(int fd, int count, const void *buf) 
+int write(int fd, const void *buf, int count) 
 {
-	*((int *)SYSARGBUF) = WRITE;
-	NSYSARGS=1;
+    *((int *)SYSARGBUF) = WRITE;
+    NSYSARGS=1;
     *((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = fd;
     ++NSYSARGS;
     *((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = count;
     ++NSYSARGS;
 
-	while(NSYSARGS<(count+3))
-	{
-		*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = *((int *)(buf+(NSYSARGS-3)*sizeof(int)));
-		++NSYSARGS;
-	}
+    memcpy((void *)(SYSARGBUF+NSYSARGS*sizeof(word_t)),(void *)buf,count);
+    NSYSARGS = NSYSARGS + ((count/4)+1);
+//	while(NSYSARGS<(count+3))
+//	{
+//		*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = *((int *)(buf+(NSYSARGS-3)*sizeof(int)));
+//		++NSYSARGS;
+//	}
 
 	__asm__("sys 0");
 

@@ -22,20 +22,35 @@ int main()
   
     int fd;
     fd=open(pathname,2);
-    dup(fd);
-   int buf[7];
-   buf[0]=(int)'a';
-   buf[1]=(int)' ';
-   buf[2]=(int)'t';
-   buf[3]=(int)'e';
-   buf[4]=(int)'s';
-   buf[5]=(int)'t';
-   buf[6]=(int)'\0';
-   write(fd,7,buf);
- 
+    char buf[7];
+    buf[0]='a';
+    buf[1]=' ';
+    buf[2]='t';
+    buf[3]='e';
+    buf[4]='s';
+    buf[5]='t';
+    buf[6]='\0';
+
+   dup(fd);
+   write(fd,buf,7);
    close(fd);
 
-    exit(0);
+   fd=open(pathname,2);
+   char _buf[7];
+   read(fd,_buf,7);
+   close(fd);
+
+   char _pathname[6];
+	_pathname[0]='b';
+	_pathname[1]='f';
+	_pathname[2]='i';
+	_pathname[3]='l';
+	_pathname[4]='e';
+	_pathname[5]='\0';
+	fd=open(_pathname,2);
+	write(fd,_buf,7);
+	close(fd);
+   exit(0);
   }
   else
     exit(0);

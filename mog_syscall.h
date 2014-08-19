@@ -1,5 +1,7 @@
 #define SYSARGBUF 16
 
+#include "mylib.h"
+
 /* syscall macros mapping syscall names to numbers representing available syscalls*/
 #define EXIT 0
 #define TIME 1
@@ -31,4 +33,4 @@ int getchar();
 int open(const char *pathname, int flags);
 int close(int fd);
 int read(int fd, void *buf, int count);
-int write(int fd, int count, const void *buf); 
+int write(int fd, const void *buf, int count); 
