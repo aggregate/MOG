@@ -177,17 +177,11 @@ emulate(register data_t *alldata, arg_t *hostsysargs)
 	else { /*convert sysargs back to host format*/
 		hostsysargs->sysarg[IPROC][0].i = MEMI(MOGSYM_NSYSARGS);
 		for(a.i=0; a.i<(sizeof(word_t)*(MEMI(MOGSYM_NSYSARGS))); a.i=a.i+sizeof(word_t))
-			//hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1].i = MEMI(MOGSYM_SYSARGS+a.i);
         	memcpy((void *)&hostsysargs->sysarg[IPROC][(a.i/sizeof(word_t))+1], (void *)&mem[MAR(MOGSYM_SYSARGS+a.i)],4);
 		++pc;
 		//alldata->flags.flag[0] = 1;
 		alldata->flags.isSyscall[IPROC] = 1;
 	}
-
-	//TEST
-	// hostsysargs->sysarg[IPROC][0].i = MEMI(MOGSYM_SYSARGS);
-	// hostsysargs->sysarg[IPROC][1].i = MEMI(MOGSYM_SYSARGS+4);
-//	 hostsysargs->sysarg[IPROC][2].i = MEMI(MOGSYM_NSYSARGS);
 
 	__syncthreads();
 
@@ -533,22 +527,11 @@ main(int argc, char **argv)
 		for(i=0; i<NPROC; i++)	{
 			int nsysargs = hostsysargs.sysarg[i][0].i;
 			int sysCallNum = hostsysargs.sysarg[i][1].i;
-			// printf("nsysargs: %i\n",nsysargs);
-			// printf("syscallnum: %i\n",sysCallNum);
-			// printf("status: %i\n",hostsysargs.sysarg[i][2].i);
-			// printf("other: %i\n",hostsysargs.sysarg[i][3].i);
-			// printf("another: %i\n",hostsysargs.sysarg[i][4].i);
-			/*look in argument buffers, decode system call, execute it within some environment,
-			  then return data*/
+			/*look in argument buffers, decode system call, execute it within some environment, then return data*/
 			if(alldata.flags.isSyscall[i] == 1) {
 				switch(sysCallNum) {
 					case 0: {/*exit()*/
-						//ndone+=1;
 						done[i]=1;
-						//printf("nsysargs: %i\n",nsysargs);
-						//printf("syscallnum: %i\n",sysCallNum);
-						//printf("status: %i\n",hostsysargs.sysarg[i][2].i);
-						//printf("other: %i\n",hostsysargs.sysarg[i][3].i);
 					}
 					break;
 					case 1:	{/*time(time_t *t)*/
@@ -577,41 +560,38 @@ main(int argc, char **argv)
 						for(ichar=0; ichar<(nsysargs-2); ++ichar)
 							pathname[ichar] = (char)hostsysargs.sysarg[i][ichar+2].i;
 	                                            int fileflags = hostsysargs.sysarg[i][ichar+2].i;
-						//printf("pathname: %s\nfileflags: %i\n",pathname,fileflags);
+						printf("pathname: %s\nfileflags: %i\n",pathname,fileflags);
 	                                            int ro = open(pathname,fileflags);
 	                                            hostsysargs.sysarg[i][0].i = ro;
 	                                            printf("openfd: %i\n",ro);
 					}
-	                break;
-	                case 6: {
-	                        int fd = hostsysargs.sysarg[i][2].i;
-	                        close(fd);
-	                }
-	                break;
+					break;
+					case 6: {
+					        int fd = hostsysargs.sysarg[i][2].i;
+					        close(fd);
+					}
+					break;
 					case 7: {/*int read(int fd, void *buf, int count)*/
-                                int fd = hostsysargs.sysarg[i][2].i;
-	                			//int fd = open("afile",2);
-                                int count = hostsysargs.sysarg[i][3].i;
-                                //char buf[count];
-                                //read(fd,(void *)(&hostsysargs.sysarg[i][0]),count);
-                                read(fd,(void *)(&hostsysargs.sysarg[i][0]),count);
-                                printf("read: count: %i fd: %i buf: %s\n",count,fd,(char *)(&hostsysargs.sysarg[i][0]));
+						int fd = hostsysargs.sysarg[i][2].i;
+						int count = hostsysargs.sysarg[i][3].i;
+						read(fd,(void *)(&hostsysargs.sysarg[i][0]),count);
+						printf("read: count: %i fd: %i buf: %s\n",count,fd,(char *)(&hostsysargs.sysarg[i][0]));
             
 					}
-	                break;
-	                case 8: {/*int write(int fd, const void *buf, int count)*/ 
-	                        int fd = hostsysargs.sysarg[i][2].i;
-	                        int count = hostsysargs.sysarg[i][3].i;
-	                        char buf[count];
-                            memcpy((void *)buf,(void *)(&hostsysargs.sysarg[i][4]),count);
-//	                        for(int iword=0; iword<count; ++iword)
-//	                          buf[iword] = (char)hostsysargs.sysarg[i][iword+4].i;
-	                        printf("write: count: %i fd: %i buf: %s other: %i %i %i\n",count,fd,buf,buf[0],buf[1],buf[2]);
-                          	write(fd,buf,count);
-	                }
-	                break;
-	                default:
-	                break;
+					break;
+					case 8: {/*int write(int fd, const void *buf, int count)*/ 
+						int fd = hostsysargs.sysarg[i][2].i;
+						int count = hostsysargs.sysarg[i][3].i;
+						char buf[count];
+						memcpy((void *)buf,(void *)(&hostsysargs.sysarg[i][4]),count);
+						for(int iword=0; iword<count; ++iword)
+							buf[iword] = (char)hostsysargs.sysarg[i][iword+4].i;
+						printf("write: count: %i fd: %i buf: %s other: %i %i %i\n",count,fd,buf,buf[0],buf[1],buf[2]);
+        		write(fd,buf,count);
+	        }
+					break;
+					default:
+					break;
 				}
 			}
 		}

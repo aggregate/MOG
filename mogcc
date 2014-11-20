@@ -1,7 +1,8 @@
 #!/bin/bash
 t=/tmp/mipscc$$
 #gcc-mipsel-4.1 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
-mips64-linux-gnu-gcc -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
+#mips64-linux-gnu-gcc -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
+mipsel-linux-gnu-gcc -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
 sed 's/lui.*$28.*//
 s/addiu.*$28,$28.*//
 s/\.option.*//

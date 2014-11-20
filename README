@@ -52,23 +52,25 @@ fact.c code. You may be able to run that....
 
 The real test requires:
 
-1. Installing the .deb packages so that you have a working GCC cross
-   compilation environment for MIPSEL. They "just work" under Ubuntu,
-   and that's why we're using such an old version.
+1. Installing a c->mipsel cross compiler, then changing the name in the
+   in the cross compiler invocation at the top of mogcc to your binary
+	 name.
 
 2. Compiling mogas.  Just cc mogas.c -o mogas.
 
-3. Installing a mog directory under ~/NVIDIA_GPU_Computing_SDK/C/src/
-   and building using the usual CUDA development environment.
+3. Installing CUDA on your system, then changing the CUDA_INSTALL_PATH
+   variable in the Makefile to your install path. We have tested the 
+	 current system on various CUDA versions between 4.0-6.5.
 
 Yup, you need all the usual CUDA stuff.  An OpenCL version is coming.
 
 
 RUNNING THE SYSTEM
 
-Given all that, the program fact.c can be compiled into fact.as by:
+Given all that, the program test.c, which includes some basic file I/O,
+can be compiled into test.as by:
 
-./mogcc fact.c >fact.as
+./mogcc test.c >test.as
 
 This actually runs GCC for MIPSEL and then translates the MIPS code into
 our MOG instruction set using a series of sed/awk scripts. It's ugly, but
@@ -80,16 +82,15 @@ spewed to stderr while doing this.
 The next step is to run the assembler to generate the data files that
 will be compiled into the simulator. For that, simply:
 
-./mogas <fact.as >mog.h
+./mogas <test.as >mog.h
 
 The mog.h name is critical, because it gets compiled into the interpreter.
 
-To build the executable MOG, just type make. If the TRACE flag is set,
+To build the executable MOG, just type make. 
+
+If the TRACE flag is set,
 you'll get a tracer; otherwise, you get execution that executes many
 instructions per kernel invocation. Simply run:
-
-~/NVIDIA_GPU_Computing_SDK/C/bin/mog
-
 
 CREDIT (BLAME?)
 
@@ -118,4 +119,4 @@ URL: http://aggregate.org/hankd/                  using Linux    ^^-^^
 
 This software is posted at:
 
-http://aggregate.org/MOG/20101122/
+https://github.com/aggregate/MOG/

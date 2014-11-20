@@ -1,10 +1,11 @@
 BIN               := MOG
 
-CUDA_INSTALL_PATH ?= /usr/local/cuda-5.0
+#CUDA_INSTALL_PATH ?= /usr/local/cuda-5.0
+CUDA_INSTALL_PATH ?= /opt/cuda
 #CUDA_SDK_PATH ?= $(HOME)/NVIDIA_GPU_Computing_SDK
 
 NVCC ?= $(CUDA_INSTALL_PATH)/bin/nvcc
-CC ?= gcc
+CC = g++
 INCD = -I"$(CUDA_SDK_PATH)/C/common/inc" -I"$(CUDA_INSTALL_PATH)/include" -I"$(CUDA_INSTALL_PATH)/samples/common/inc"
 LIBS = -L"$(CUDA_INSTALL_PATH)/lib64" -lcudart
 
