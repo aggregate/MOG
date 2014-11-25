@@ -1,8 +1,7 @@
 BIN               := MOG
 
-#CUDA_INSTALL_PATH ?= /usr/local/cuda-5.0
-CUDA_INSTALL_PATH ?= /opt/cuda
-#CUDA_SDK_PATH ?= $(HOME)/NVIDIA_GPU_Computing_SDK
+CUDA_INSTALL_PATH ?= /usr/local/cuda-5.0
+#CUDA_INSTALL_PATH ?= /opt/cuda
 
 NVCC ?= $(CUDA_INSTALL_PATH)/bin/nvcc
 CC = g++

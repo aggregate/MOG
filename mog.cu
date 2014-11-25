@@ -555,15 +555,16 @@ main(int argc, char **argv)
 					}
 					break;
 					case 5: {/*open(const char *pathname, int flags)*/
-						char *pathname = (char *)malloc((nsysargs-2)*sizeof(char));
-	                                            int ichar;
-						for(ichar=0; ichar<(nsysargs-2); ++ichar)
+						char *pathname = (char *)malloc((nsysargs-3)*sizeof(char));
+						int ichar;
+						for(ichar=0; ichar<(nsysargs-3); ++ichar)
 							pathname[ichar] = (char)hostsysargs.sysarg[i][ichar+2].i;
-	                                            int fileflags = hostsysargs.sysarg[i][ichar+2].i;
-						printf("pathname: %s\nfileflags: %i\n",pathname,fileflags);
-	                                            int ro = open(pathname,fileflags);
-	                                            hostsysargs.sysarg[i][0].i = ro;
-	                                            printf("openfd: %i\n",ro);
+						int fileflags = hostsysargs.sysarg[i][ichar+2].i;
+						int filemode = hostsysargs.sysarg[i][ichar+3].i;
+						printf("pathname: %s\nfileflags: %i\nfilemode: %i\n",pathname,fileflags,filemode);
+						int ro = open(pathname,fileflags,filemode);
+						hostsysargs.sysarg[i][0].i = ro;
+						printf("openfd: %i\n",ro);
 					}
 					break;
 					case 6: {
@@ -584,8 +585,6 @@ main(int argc, char **argv)
 						int count = hostsysargs.sysarg[i][3].i;
 						char buf[count];
 						memcpy((void *)buf,(void *)(&hostsysargs.sysarg[i][4]),count);
-						for(int iword=0; iword<count; ++iword)
-							buf[iword] = (char)hostsysargs.sysarg[i][iword+4].i;
 						printf("write: count: %i fd: %i buf: %s other: %i %i %i\n",count,fd,buf,buf[0],buf[1],buf[2]);
         		write(fd,buf,count);
 	        }
@@ -595,9 +594,7 @@ main(int argc, char **argv)
 				}
 			}
 		}
-//		printf("ndone: %i\n",ndone);
 		checkCudaErrors( cudaMemcpy(gpusysargs, &(hostsysargs), sizeof(arg_t), cudaMemcpyHostToDevice) );
-//	} while (ndone<NPROC);
 	} while (!alldone(done));
 #endif
 

@@ -48,7 +48,7 @@ int getchar()
 	return (*((int *)SYSARGBUF));
 }
 
-int open(const char *pathname, int flags)
+int open(const char *pathname, int flags, int mode)
 {
 	*((int *)SYSARGBUF) = OPEN;
 
@@ -62,6 +62,8 @@ int open(const char *pathname, int flags)
 	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = (int)'\0'; 
 	++NSYSARGS;
 	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = flags;
+	++NSYSARGS;
+	*((int *)(SYSARGBUF+NSYSARGS*sizeof(word_t))) = mode;
 	++NSYSARGS;
 
 	__asm__("sys 0");

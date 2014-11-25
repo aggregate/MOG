@@ -30,7 +30,7 @@ int time(int *t);
 int dup(int fildes);
 void putchar(char c);
 int getchar();
-int open(const char *pathname, int flags);
+int open(const char *pathname, int flags, int mode);
 int close(int fd);
 int read(int fd, void *buf, int count);
 int write(int fd, const void *buf, int count); 
