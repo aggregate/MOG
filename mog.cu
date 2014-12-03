@@ -393,7 +393,7 @@ int alldone(int* done)
 	for(int i=0; i<NPROC; ++i)
 		total += done[i];
 
-	printf("total: %i\n",total);
+	//printf("total: %i\n",total);
 	if(total==NPROC)
 		return 1;
 	else 
@@ -404,8 +404,7 @@ int
 main(int argc, char **argv) 
 {
 	register int i, j;
-	//int ndone = 0; //exit() flag
-	int done[NPROC] = {0};
+	int done[NPROC] = {0}; //used to determine exit condition
 	data_t *gpudata;
 	arg_t *gpusysargs;
 	dim3 dimBlock(BNPROC, 1, 1);
@@ -567,9 +566,9 @@ main(int argc, char **argv)
 						printf("openfd: %i\n",ro);
 					}
 					break;
-					case 6: {
-					        int fd = hostsysargs.sysarg[i][2].i;
-					        close(fd);
+					case 6: {/*close(int fd)*/
+						int fd = hostsysargs.sysarg[i][2].i;
+						close(fd);
 					}
 					break;
 					case 7: {/*int read(int fd, void *buf, int count)*/
@@ -588,6 +587,11 @@ main(int argc, char **argv)
 						printf("write: count: %i fd: %i buf: %s other: %i %i %i\n",count,fd,buf,buf[0],buf[1],buf[2]);
         		write(fd,buf,count);
 	        }
+					break;
+					case 9: {/*putint(int i)*/
+						int anint=hostsysargs.sysarg[i][2].i;
+						printf("%i\n",anint);
+					}
 					break;
 					default:
 					break;

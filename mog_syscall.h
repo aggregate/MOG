@@ -12,6 +12,7 @@
 #define CLOSE 6
 #define READ 7
 #define WRITE 8
+#define PUTINT 9
 
 typedef union word_union {
         float                   f;
@@ -29,6 +30,7 @@ void exit(int status);
 int time(int *t);
 int dup(int fildes);
 void putchar(char c);
+void putint(int i); //for testing purposes
 int getchar();
 int open(const char *pathname, int flags, int mode);
 int close(int fd);

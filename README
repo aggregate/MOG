@@ -42,28 +42,32 @@ we strongly believe it is a mistake to use them (due to a memory layout
 that breaks the banking properties). For several years, we have had
 libraries that facilitate use of pairs of native floats instead.
 
-There are hooks for system calls, but only exit() is really there.
+There is also now a framework for passing system calls between the GPU and
+the host. Just as a proof of concept as well as some system testing purposes, 
+we have provided support for some basic file I/O, which only requires the 
+inclusion of a special 'mog_syscall' header and footer(see test.c/iotest.c
+for examples).
 
+We are currently working on an OpenCL backend.
 
 INSTALLING THE SYSTEM
+Depending on your system, this may be very difficult. I recommend using arch; 
+there is a regularly updated cuda build in the official repo, and working cross 
+compilers in the AUR
 
-Well, there's an AMD64 binary, mog, that traces execution of the dumb
-fact.c code. You may be able to run that....
-
-The real test requires:
-
-1. Installing a c->mipsel cross compiler, then changing the name in the
+1. Install a c->mipsel cross compiler, then change the name in the
    in the cross compiler invocation at the top of mogcc to your binary
 	 name.
 
-2. Compiling mogas.  Just cc mogas.c -o mogas.
+2. Compile mogas.  Just cc mogas.c -o mogas.
 
-3. Installing CUDA on your system, then changing the CUDA_INSTALL_PATH
+3. Install CUDA on your system, then change the CUDA_INSTALL_PATH
    variable in the Makefile to your install path. We have tested the 
 	 current system on various CUDA versions between 4.0-6.5.
 
-Yup, you need all the usual CUDA stuff.  An OpenCL version is coming.
-
+Note: Though not strictly necessary, you may also want to change the 
+GPU_MULTIPROCESSORS, GPU_WARPSIZE and GPU_THREADSPERBLOCK definitions at the top 
+of mog.cu to match your system.
 
 RUNNING THE SYSTEM
 
@@ -87,6 +91,8 @@ will be compiled into the simulator. For that, simply:
 The mog.h name is critical, because it gets compiled into the interpreter.
 
 To build the executable MOG, just type make. 
+
+A iotest.c similarly tests some basic file I/O.
 
 If the TRACE flag is set,
 you'll get a tracer; otherwise, you get execution that executes many

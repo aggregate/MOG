@@ -38,6 +38,15 @@ void putchar(char c)
 	__asm__("sys 0");
 }
 
+void putint(int i) //for testing purposes
+{
+	NSYSARGS = 2;
+	*((int *)SYSARGBUF) = PUTINT;
+	*((int *)(SYSARGBUF+sizeof(word_t))) = (int)i;
+
+	__asm__("sys 0");
+}
+
 int getchar()
 {
 	NSYSARGS = 2;
