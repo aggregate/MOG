@@ -452,13 +452,13 @@ main(int argc, char **argv)
 			hostsysargs.sysarg[i][j].i=-1;
 	}
 
-	/* Allocate and copy alldata to GPU memory */
-    checkCudaErrors( cudaMalloc((void**) &gpudata, sizeof(data_t)) );
-    checkCudaErrors( cudaMemcpy(gpudata, &(alldata), sizeof(data_t), cudaMemcpyHostToDevice) );
+		/* Allocate and copy alldata to GPU memory */
+		checkCudaErrors( cudaMalloc((void**) &gpudata, sizeof(data_t)) );
+		checkCudaErrors( cudaMemcpy(gpudata, &(alldata), sizeof(data_t), cudaMemcpyHostToDevice) );
 
-    /* Allocate and copy hostsysargs to GPU memory */
-    checkCudaErrors( cudaMalloc((void**) &gpusysargs, sizeof(arg_t)) );
-    checkCudaErrors( cudaMemcpy(gpusysargs, &(hostsysargs), sizeof(arg_t), cudaMemcpyHostToDevice) );
+		/* Allocate and copy hostsysargs to GPU memory */
+		checkCudaErrors( cudaMalloc((void**) &gpusysargs, sizeof(arg_t)) );
+		checkCudaErrors( cudaMemcpy(gpusysargs, &(hostsysargs), sizeof(arg_t), cudaMemcpyHostToDevice) );
 
 	/* Allocate and copy cpool[] to GPU texture */
 	cudaChannelFormatDesc channelDesc2 = cudaCreateChannelDesc<int>();
@@ -501,7 +501,7 @@ main(int argc, char **argv)
 		   If we are doing a debug trace, copy entire data,
 		   else could copy only the flags
 		*/
-	    checkCudaErrors( cudaMemcpy(&(alldata), gpudata, sizeof(data_t), cudaMemcpyDeviceToHost) );
+		checkCudaErrors( cudaMemcpy(&(alldata), gpudata, sizeof(data_t), cudaMemcpyDeviceToHost) );
 		printf("flag = %d\n", alldata.flags.flag[0]);
 		for (i=0; i<NPROC; ++i) {
 			status(i);
@@ -522,7 +522,7 @@ main(int argc, char **argv)
 		checkCudaErrors( cudaMemcpy(&(hostsysargs), gpusysargs, sizeof(arg_t), cudaMemcpyDeviceToHost) );
 
 		//if(alldata.flags.flag[0] == 1) {/*if there was a syscall start decoding*/
-			/*copy sysargs back to host*/
+		/*copy sysargs back to host*/
 		for(i=0; i<NPROC; i++)	{
 			int nsysargs = hostsysargs.sysarg[i][0].i;
 			int sysCallNum = hostsysargs.sysarg[i][1].i;
@@ -585,8 +585,8 @@ main(int argc, char **argv)
 						char buf[count];
 						memcpy((void *)buf,(void *)(&hostsysargs.sysarg[i][4]),count);
 						printf("write: count: %i fd: %i buf: %s other: %i %i %i\n",count,fd,buf,buf[0],buf[1],buf[2]);
-        		write(fd,buf,count);
-	        }
+						write(fd,buf,count);
+					}
 					break;
 					case 9: {/*putint(int i)*/
 						int anint=hostsysargs.sysarg[i][2].i;

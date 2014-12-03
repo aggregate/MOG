@@ -92,7 +92,7 @@ The mog.h name is critical, because it gets compiled into the interpreter.
 
 To build the executable MOG, just type make. 
 
-A iotest.c similarly tests some basic file I/O.
+iotest.c similarly tests some basic file I/O.
 
 If the TRACE flag is set,
 you'll get a tracer; otherwise, you get execution that executes many
