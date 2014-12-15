@@ -63,8 +63,10 @@ s/  / /g
 /^[ \t]*$/d
 s/%got(\(.*\))(\$28)/%got \1/
 s/%call16(\(.*\))(\$28)/%got \1/
-s/%lo(\(.*\))(\($.*\))/%lo \2/
-' <mips.as |awk --non-decimal-data '
+s/%lo(\([a-zA-Z0-9_]*\))/low16bits\1/
+s/%hi(\([a-zA-Z0-9_]*\))/hi16bits\1/
+' <mips.as >mogcctmp
+awk --non-decimal-data '
 BEGIN	{
 	mults = "$cannot_pair_with_mult_error"
 	multt = "$cannot_pair_with_mult_error"
@@ -229,7 +231,7 @@ BEGIN	{
 	next
 	}
 /^ lui/	{
-	print " li " $2 " " ($3 * 65536)
+	print " li " $2 " shift16left" $3
 	next
 	}
 /%(lo|got)/	{
@@ -262,7 +264,7 @@ BEGIN	{
 /^/	{
 	print $0 " ###"
 	}
-' |awk '
+' <mogcctmp |awk '
 /^ [ls]([whb]|bu|hu|wc1) / {
 	/* Replace offset computation inside load or store */
 	/* also make c1 stuff no longer special */
@@ -296,4 +298,13 @@ BEGIN	{
 /^/	{
 	print $0
 	}
-' |./conflow |./twe2acc |./lrsropt |./regmap |./colseg |./deadopt
+' >toconflow
+./conflow <toconflow >totwe2acc
+./twe2acc <totwe2acc >tolrsopt
+./lrsropt <tolrsopt >toregmap
+./regmap <toregmap >tocolseg
+./colseg <tocolseg >todeadopt
+./deadopt <todeadopt >totest
+sed 's/low16bits\(.*\)/(\1\&0xffff)/
+s/hi16bits\(.*\)/((\1>>16)\&0xffff)/
+s/shift16left\(.*\)/(\1<<16)/' <totest >test.as

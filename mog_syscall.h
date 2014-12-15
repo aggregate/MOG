@@ -25,6 +25,7 @@ typedef union word_union {
 //byte addressing?
 int NSYSARGS;
 int IPROC;
+int NPROC;
 
 void exit(int status);
 int time(int *t);

@@ -71,6 +71,12 @@ BEGIN	{
 	indata = "f"
 	next
 	}
+/^.*:$/	{
+	if (indata == "t") {
+		print $0
+	}
+	next
+	}
 /^ .word /	{
 	if (indata == "f") {
 		print "colseg found .word in text segment" >>"/dev/stderr"
@@ -85,12 +91,6 @@ BEGIN	{
 	print " .space " $2
 	next
 	}
-/^.*:$/	{
-	if (indata == "t") {
-		print $0
-	}
-	next
-	}
 /^ .comm /	{
 	next
 	}
@@ -99,8 +99,8 @@ BEGIN	{
 	}
 END	{
 	/* space for stack */
-	print " .space " 256
 	print "DATASIZE:"
+	print " .space " 256
 	}
 ' <$t
 #
