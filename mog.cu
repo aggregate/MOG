@@ -433,8 +433,10 @@ main(int argc, char **argv)
 		/* Fill data memory, setting NPROC and IPROC */
 		alldata.mem[WARPDIV(i)][0][WARPMOD(i)].i = NPROC;
 		alldata.mem[WARPDIV(i)][1][WARPMOD(i)].i = i;
-		for (j=2; j<DATASIZE; ++j) {
-			alldata.mem[WARPDIV(i)][j][WARPMOD(i)].i = dataseg[j];
+		//for (j=2; j<DATASIZE; ++j) {
+			//alldata.mem[WARPDIV(i)][j][WARPMOD(i)].i = dataseg[j];
+		for (j=8; j<DATASIZE; j=j+4) {
+			alldata.mem[WARPDIV(i)][j/4][WARPMOD(i)].i = dataseg[j];
 		}
 
 		/* Initialize sp, ra, and other registers */
@@ -451,6 +453,7 @@ main(int argc, char **argv)
 		for(j=0; j<NSYSARGS_host; j++)
 			hostsysargs.sysarg[i][j].i=-1;
 	}
+	//printf("MAXFAC: %i\n", alldata.mem[WARPDIV(3)][528][WARPMOD(3)]);
 
 		/* Allocate and copy alldata to GPU memory */
 		checkCudaErrors( cudaMalloc((void**) &gpudata, sizeof(data_t)) );

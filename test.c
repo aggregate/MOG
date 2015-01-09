@@ -1,8 +1,6 @@
 #include "mog_syscall.h"
 
-//int MAXFAC = 9;
 int MAXFAC = 9;
-//int MAXITER = 3;
 int MAXITER = 3;
 
 int
@@ -14,9 +12,6 @@ fact(int i)
 
 int main()
 {
-//	MAXFAC = 9;
-//	MAXITER = 2;
-
 	//do some random operations on the first few PEs 
 	//plus a syscall to view results
   if(IPROC==3)
@@ -24,18 +19,14 @@ int main()
 		char achar;
 		achar = 'b';
 		achar = achar - 1;
-		putint(MAXFAC);
-		putint(MAXITER);
-		putint(IPROC);
-		putint(NPROC);
-		//putchar(achar);
+		putchar(achar);
   }
   else if(IPROC==3)
 	{
 		char achar;
 		achar = 'a';
 		achar = achar + 1;
-		//putchar(achar);
+		putchar(achar);
 	}
 	else if(IPROC==4)
 	{
@@ -44,13 +35,13 @@ int main()
 		achar = 'a';
 		achar = achar + 5*2;
 		achar = achar - 8;
-		//putchar(achar);
+		putchar(achar);
 	}
 	else if(IPROC==5)
 	{
 		int anint;
 		anint = (42+3*2)%7;
-		//putint(anint);
+		putint(anint);
 	}
 	else
 	{//do some recursion(still MIMD) on remaining PEs
@@ -61,7 +52,7 @@ int main()
 			tmp = fact((k ^ IPROC) % MAXFAC);
 			k = k + 1;
 		}
-		//putint(tmp);
+		putint(tmp);
 	}
 	exit(0);
 }

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define	VERSION	20101122
 #define	TARGET	"cuda"
@@ -44,6 +45,9 @@ int	maxreg = -1;
 
 #define	RETS	'R'
 #define	FUNC	'F'
+
+#define LSHFT 'l'
+#define RSHFT 'r'
 
 #define	MAXLEX	32		/* Length of maximum lexeme */
 #define	MAXFREE	(1024*1024)	/* Size of free char pool */
@@ -445,6 +449,26 @@ more:
 	}
 
 	/* Punctuation is all that's left */
+	if(nextc=='<')
+	{
+		advance();
+		if(nextc=='<')
+		{
+			advance();
+			return(nextt=LSHFT);
+		}
+		return(nextt='<');
+	}
+	if(nextc=='>')
+	{
+		advance();
+		if(nextc=='>')
+		{
+			advance();
+			return(nextt=RSHFT);
+		}
+		return(nextt='>');
+	}
 	nextt = nextc;
 	advance();
 	return(nextt);
@@ -467,7 +491,7 @@ extern unsigned int expr(void);
 extern void stat(void);
 
 unsigned int
-expr4(void)
+expr5(void)
 {
 	register unsigned int t;
 
@@ -483,20 +507,19 @@ expr4(void)
 		return(symtab[t].val);
 	case WORD:
 		/* Really shouldn't happen on pass 2 */
-		if (
-		pass == 2) {
+		if (pass == 2) 
 			error("Undefined symbol");
-		}
 		lex();
 		return(0);
 	}
 
 	if (match('-')) {
-		return(-expr4());
+		return(-expr5());
 	} else if (match('!')) {
-		return(-!expr4());
+	//	return(-!expr4());
+		return(!expr5());
 	} else if (match('~')) {
-		return(~expr4());
+		return(~expr5());
 	} else if (match('(')) {
 		t = expr();
 		if (!match(')')) warn("missing ) assumed");
@@ -507,11 +530,27 @@ expr4(void)
 }
 
 unsigned int
+expr4(void)
+{
+	register unsigned int t = expr5();
+	while (match('*')) {
+		t *= expr5();
+	}
+	return(t);
+}
+
+unsigned int
 expr3(void)
 {
 	register unsigned int t = expr4();
-	while (match('*')) {
-		t *= expr4();
+	while ((nextt == '+') || (nextt == '-')) {
+		register int n = nextt;
+
+		lex();
+		switch (n) {
+		case '+': t += expr4(); break;
+		case '-': t -= expr4(); break;
+		}
 	}
 	return(t);
 }
@@ -520,13 +559,13 @@ unsigned int
 expr2(void)
 {
 	register unsigned int t = expr3();
-	while ((nextt == '+') || (nextt == '-')) {
+	while ((nextt == LSHFT) || (nextt == RSHFT)) {
 		register int n = nextt;
 
 		lex();
 		switch (n) {
-		case '+': t += expr3(); break;
-		case '-': t -= expr3(); break;
+		case LSHFT: t = (t << expr3()); break;
+		case RSHFT: t = (t >> expr3()); break;
 		}
 	}
 	return(t);
@@ -540,7 +579,7 @@ expr1(void)
 		register int n = nextt;
 
 		lex();
-		switch (t) {
+		switch (n) {
 		case '<': t = (t < expr2()); break;
 		case '>': t = (t > expr2()); break;
 		}
