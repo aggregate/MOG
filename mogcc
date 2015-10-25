@@ -1,8 +1,12 @@
 #!/bin/bash
+
 t=/tmp/mipscc$$
-#gcc-mipsel-4.1 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
-mips64-linux-gnu-gcc -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
-#mipsel-linux-gnu-gcc -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer -S $@ -o mips.as
+CODEBENCH_INSTALL_DIR=~/mentor
+CROSS_COMPILER=${CODEBENCH_INSTALL_DIR}/bin/mips-linux-gnu-gcc
+ARGS="-EL -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer"
+
+$CROSS_COMPILER $ARGS -S $@ -o mips.as
+
 sed 's/lui.*$28.*//
 s/addiu.*$28,$28.*//
 s/\.option.*//
@@ -65,8 +69,9 @@ s/%got(\(.*\))(\$28)/%got \1/
 s/%call16(\(.*\))(\$28)/%got \1/
 s/%lo(\([a-zA-Z0-9_]*\))/low16bits\1/
 s/%hi(\([a-zA-Z0-9_]*\))/hi16bits\1/
-' <mips.as >mogcctmp
-awk --non-decimal-data '
+' <mips.as >debug/mogcctmp
+
+gawk --non-decimal-data '
 BEGIN	{
 	mults = "$cannot_pair_with_mult_error"
 	multt = "$cannot_pair_with_mult_error"
@@ -264,7 +269,9 @@ BEGIN	{
 /^/	{
 	print $0 " ###"
 	}
-' <mogcctmp |awk '
+' <debug/mogcctmp >debug/mogcctmp1
+
+gawk '
 /^ [ls]([whb]|bu|hu|wc1) / {
 	/* Replace offset computation inside load or store */
 	/* also make c1 stuff no longer special */
@@ -298,13 +305,15 @@ BEGIN	{
 /^/	{
 	print $0
 	}
-' >toconflow
-./conflow <toconflow >totwe2acc
-./twe2acc <totwe2acc >tolrsopt
-./lrsropt <tolrsopt >toregmap
-./regmap <toregmap >tocolseg
-./colseg <tocolseg >todeadopt
-./deadopt <todeadopt >totest
+' <debug/mogcctmp1 >debug/toconflow
+
+./mogcc-tools/conflow <debug/toconflow >debug/totwe2acc
+./mogcc-tools/twe2acc <debug/totwe2acc >debug/tolrsopt
+./mogcc-tools/lrsropt <debug/tolrsopt >debug/toregmap
+./mogcc-tools/regmap <debug/toregmap >debug/tocolseg
+./mogcc-tools/colseg <debug/tocolseg >debug/todeadopt
+./mogcc-tools/deadopt <debug/todeadopt >debug/totest
+
 sed 's/low16bits\(.*\)/(\1\&0xffff)/
 s/hi16bits\(.*\)/((\1>>16)\&0xffff)/
-s/shift16left\(.*\)/(\1<<16)/' <totest >test.as
+s/shift16left\(.*\)/(\1<<16)/' <debug/totest
