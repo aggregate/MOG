@@ -5,7 +5,7 @@ CODEBENCH_INSTALL_DIR=~/mentor
 CROSS_COMPILER=${CODEBENCH_INSTALL_DIR}/bin/mips-linux-gnu-gcc
 ARGS="-EL -mabi=32 -mips1 -mgp32 -mfp32 -msym32 -mno-dsp --omit-frame-pointer"
 
-$CROSS_COMPILER $ARGS -S $@ -o mips.as
+$CROSS_COMPILER $ARGS -S $@ -o debug/mips.as
 
 sed 's/lui.*$28.*//
 s/addiu.*$28,$28.*//
@@ -69,7 +69,7 @@ s/%got(\(.*\))(\$28)/%got \1/
 s/%call16(\(.*\))(\$28)/%got \1/
 s/%lo(\([a-zA-Z0-9_]*\))/low16bits\1/
 s/%hi(\([a-zA-Z0-9_]*\))/hi16bits\1/
-' <mips.as >debug/mogcctmp
+' <debug/mips.as >debug/mogcctmp
 
 gawk --non-decimal-data '
 BEGIN	{

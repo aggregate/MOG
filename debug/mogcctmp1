@@ -1,0 +1,534 @@
+ .section .mdebug.abi32 ###
+ .nan legacy ###
+ .gnu_attribute 4, 1 ###
+ .abicalls ###
+ .text ###
+ .ent memcpy ###
+memcpy:
+ li $32, -16
+ addu $29, $29, $32
+ sw $4, 16($29)
+ sw $5, 20($29)
+ sw $6, 24($29)
+ sw $0, 8($29)
+ j DOL_L2 ###
+DOL_L3:
+ lw $2, 8($29)
+ li $32, 3
+ addu $2, $2, $32
+ lw $3, 20($29)
+ addu $2, $3, $2 ###
+ lb $2, 0($2)
+ li $32, 24
+ sll $3, $2, $32
+ lw $2, 8($29)
+ li $32, 2
+ addu $2, $2, $32
+ lw $4, 20($29)
+ addu $2, $4, $2 ###
+ lb $2, 0($2)
+ li $32, 16
+ sll $2, $2, $32
+ addu $3, $3, $2 ###
+ lw $2, 8($29)
+ li $32, 1
+ addu $2, $2, $32
+ lw $4, 20($29)
+ addu $2, $4, $2 ###
+ lb $2, 0($2)
+ li $32, 8
+ sll $2, $2, $32
+ addu $2, $3, $2 ###
+ lw $3, 8($29)
+ lw $4, 20($29)
+ addu $3, $4, $3 ###
+ lb $3, 0($3)
+ addu $2, $2, $3 ###
+ sw $2, 12($29)
+ lw $2, 8($29)
+ lw $3, 16($29)
+ addu $2, $3, $2 ###
+ lw $3, 12($29)
+ sw $3, 0($2)
+ lw $2, 8($29)
+ li $32, 4
+ addu $2, $2, $32
+ sw $2, 8($29)
+DOL_L2:
+ lw $3, 8($29)
+ lw $2, 24($29)
+ slt $2, $3, $2
+ bne $2, $0, DOL_L3
+ lw $2, 16($29)
+ li $32, 16
+ addu $29, $29, $32
+ j $31 ###
+ .comm NSYSARGS, 4, 4 ###
+ .comm IPROC, 4, 4 ###
+ .comm NPROC, 4, 4 ###
+ .data ###
+MAXFAC:
+ .word 9 ###
+MAXITER:
+ .word 3 ###
+ .text ###
+ .ent fact ###
+fact:
+ li $32, -32
+ addu $29, $29, $32
+ sw $31, 28($29)
+ sw $4, 32($29)
+ lw $2, 32($29)
+ li $32, 2
+ slt $2, $2, $32
+ beq $2, $0, DOL_L6
+ li $2, 1 ###
+ mtlo $2 ###
+ j DOL_L7 ###
+DOL_L6:
+ lw $2, 32($29)
+ li $32, -1
+ addu $2, $2, $32
+ move $4, $2 ###
+ jal fact ###
+ move $3, $2 ###
+ lw $2, 32($29)
+DOL_L7:
+ mul $2, $3, $2
+ lw $31, 28($29)
+ li $32, 32
+ addu $29, $29, $32
+ j $31 ###
+ .ent main ###
+main:
+ li $32, -48
+ addu $29, $29, $32
+ sw $31, 44($29)
+ li $2, shift16lefthi16bitsIPROC
+ lw $3, low16bitsIPROC($2)
+ li $2, 3 ###
+ bne $3, $2, DOL_L9
+ li $2, 98 ###
+ sb $2, 32($29)
+ lbu $2, 32($29)
+ li $32, -1
+ addu $2, $2, $32
+ li $32, 0x00ff
+ and $2, $2, $32
+ sb $2, 32($29)
+ lb $2, 32($29)
+ move $4, $2 ###
+ jal putchar ###
+ j DOL_L10 ###
+DOL_L9:
+ li $2, shift16lefthi16bitsIPROC
+ lw $3, low16bitsIPROC($2)
+ li $2, 3 ###
+ bne $3, $2, DOL_L11
+ li $2, 97 ###
+ sb $2, 33($29)
+ lbu $2, 33($29)
+ li $32, 1
+ addu $2, $2, $32
+ li $32, 0x00ff
+ and $2, $2, $32
+ sb $2, 33($29)
+ lb $2, 33($29)
+ move $4, $2 ###
+ jal putchar ###
+ j DOL_L10 ###
+DOL_L11:
+ li $2, shift16lefthi16bitsIPROC
+ lw $3, low16bitsIPROC($2)
+ li $2, 4 ###
+ bne $3, $2, DOL_L12
+ li $2, 97 ###
+ sb $2, 34($29)
+ lbu $2, 34($29)
+ li $32, 10
+ addu $2, $2, $32
+ li $32, 0x00ff
+ and $2, $2, $32
+ sb $2, 34($29)
+ lbu $2, 34($29)
+ li $32, -8
+ addu $2, $2, $32
+ li $32, 0x00ff
+ and $2, $2, $32
+ sb $2, 34($29)
+ lb $2, 34($29)
+ move $4, $2 ###
+ jal putchar ###
+ j DOL_L10 ###
+DOL_L12:
+ li $2, shift16lefthi16bitsIPROC
+ lw $3, low16bitsIPROC($2)
+ li $2, 5 ###
+ bne $3, $2, DOL_L13
+ li $2, 6 ###
+ sw $2, 36($29)
+ lw $4, 36($29)
+ jal putint ###
+ j DOL_L10 ###
+DOL_L13:
+ sw $0, 28($29)
+ j DOL_L14 ###
+DOL_L15:
+ li $2, shift16lefthi16bitsIPROC
+ lw $3, low16bitsIPROC($2)
+ lw $2, 28($29)
+ xor $3, $3, $2 ###
+ li $2, shift16lefthi16bitsMAXFAC
+ lw $2, low16bitsMAXFAC($2)
+ bne $2, $0, MYLOCAL_0
+MYLOCAL_0:
+ rem $2, $3, $2
+ move $4, $2 ###
+ jal fact ###
+ sw $2, 24($29)
+ lw $2, 28($29)
+ li $32, 1
+ addu $2, $2, $32
+ sw $2, 28($29)
+DOL_L14:
+ li $2, shift16lefthi16bitsMAXITER
+ lw $2, low16bitsMAXITER($2)
+ lw $3, 28($29)
+ slt $2, $3, $2
+ bne $2, $0, DOL_L15
+ lw $4, 24($29)
+ jal putint ###
+DOL_L10:
+ move $4, $0 ###
+ jal exit ###
+ .ent exit ###
+exit:
+ sw $4, 0($29)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 3 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 16 ###
+ sw $0, 0($2)
+ li $2, 20 ###
+ lw $3, 0($29)
+ sw $3, 0($2)
+ sys 0 ###
+ j $31 ###
+ .ent time ###
+time:
+ sw $4, 0($29)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 3 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 16 ###
+ li $3, 1 ###
+ sw $3, 0($2)
+ li $2, 32 ###
+ lw $3, 0($29)
+ sw $3, 0($2)
+ sys 0 ###
+ li $2, 16 ###
+ lw $2, 0($2)
+ j $31 ###
+ .ent dup ###
+dup:
+ sw $4, 0($29)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 3 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 16 ###
+ li $3, 2 ###
+ sw $3, 0($2)
+ li $2, 20 ###
+ lw $3, 0($29)
+ sw $3, 0($2)
+ sys 0 ###
+ li $2, 16 ###
+ lw $2, 0($2)
+ j $31 ###
+ .ent putchar ###
+putchar:
+ move $2, $4 ###
+ sb $2, 0($29)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 2 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 16 ###
+ li $3, 3 ###
+ sw $3, 0($2)
+ li $2, 20 ###
+ lb $3, 0($29)
+ sw $3, 0($2)
+ sys 0 ###
+ j $31 ###
+ .ent putint ###
+putint:
+ sw $4, 0($29)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 2 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 16 ###
+ li $3, 9 ###
+ sw $3, 0($2)
+ li $2, 20 ###
+ lw $3, 0($29)
+ sw $3, 0($2)
+ sys 0 ###
+ j $31 ###
+ .ent getchar ###
+getchar:
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 2 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 16 ###
+ li $3, 4 ###
+ sw $3, 0($2)
+ sys 0 ###
+ li $2, 16 ###
+ lw $2, 0($2)
+ j $31 ###
+ .ent open ###
+open:
+ sw $4, 0($29)
+ sw $5, 4($29)
+ sw $6, 8($29)
+ li $2, 16 ###
+ li $3, 5 ###
+ sw $3, 0($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 1 ###
+ sw $3, low16bitsNSYSARGS($2)
+ j DOL_L26 ###
+DOL_L27:
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $4, $2 ###
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, -1
+ addu $2, $2, $32
+ lw $3, 0($29)
+ addu $2, $3, $2 ###
+ lb $2, 0($2)
+ sw $2, 0($4)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+DOL_L26:
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, -1
+ addu $2, $2, $32
+ lw $3, 0($29)
+ addu $2, $3, $2 ###
+ lb $2, 0($2)
+ bne $2, $0, DOL_L27
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ sw $0, 0($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 4($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 8($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ sys 0 ###
+ li $2, 16 ###
+ lw $2, 0($2)
+ j $31 ###
+ .ent close ###
+close:
+ sw $4, 0($29)
+ li $2, 16 ###
+ li $3, 7 ###
+ sw $3, 0($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 1 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 0($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, 1 ###
+ j $31 ###
+ .ent read ###
+read:
+ li $32, -32
+ addu $29, $29, $32
+ sw $31, 28($29)
+ sw $4, 32($29)
+ sw $5, 36($29)
+ sw $6, 40($29)
+ li $2, 16 ###
+ li $3, 7 ###
+ sw $3, 0($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 1 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 32($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 40($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ sys 0 ###
+ lw $4, 36($29)
+ li $5, 16 ###
+ lw $6, 40($29)
+ jal memcpy ###
+ li $2, 1 ###
+ lw $31, 28($29)
+ li $32, 32
+ addu $29, $29, $32
+ j $31 ###
+ .ent write ###
+write:
+ li $32, -32
+ addu $29, $29, $32
+ sw $31, 28($29)
+ sw $4, 32($29)
+ sw $5, 36($29)
+ sw $6, 40($29)
+ li $2, 16 ###
+ li $3, 8 ###
+ sw $3, 0($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ li $3, 1 ###
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 32($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $3, $2 ###
+ lw $2, 40($29)
+ sw $2, 0($3)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ li $32, 4
+ addu $2, $2, $32
+ li $32, 2
+ sll $2, $2, $32
+ move $4, $2 ###
+ lw $5, 36($29)
+ lw $6, 40($29)
+ jal memcpy ###
+ lw $2, 40($29)
+ bgez $2, DOL_L34 ###
+ li $32, 3
+ addu $2, $2, $32
+DOL_L34:
+ li $32, 2
+ sra $2, $2, $32
+ li $32, 1
+ addu $3, $2, $32
+ li $2, shift16lefthi16bitsNSYSARGS
+ lw $2, low16bitsNSYSARGS($2)
+ addu $3, $3, $2 ###
+ li $2, shift16lefthi16bitsNSYSARGS
+ sw $3, low16bitsNSYSARGS($2)
+ sys 0 ###
+ li $2, 16 ###
+ lw $2, 0($2)
+ lw $31, 28($29)
+ li $32, 32
+ addu $29, $29, $32
+ j $31 ###

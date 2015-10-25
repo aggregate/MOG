@@ -1,0 +1,1614 @@
+ .data
+NPROC:
+ .word 0
+IPROC:
+ .word 0
+NSYSARGS:
+ .word 32
+ISYSARGS:
+ .word 0
+SYSARGS:
+ .space 128
+MAXFAC:
+ .word 9
+MAXITER:
+ .word 3
+DATASIZE:
+ .space 256
+ .text
+ .ent memcpy ###
+memcpy:
+ li -16
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ li 16
+ sr $2 
+ add $0 
+ sr $2 
+ lr $5 
+ sw $2 
+ li 20
+ sr $2 
+ add $0 
+ sr $2 
+ lr $6 
+ sw $2 
+ li 24
+ sr $2 
+ add $0 
+ sr $2 
+ lr $7 
+ sw $2 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ li 0
+ sw $2 
+ li DOL_L2
+ sr $2 
+ j
+DOL_L3:
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 3
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 20
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $4 
+ add $3 
+ sr $3 
+ lb
+ sr $3 
+ li 24
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $4 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 20
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $5 
+ add $3 
+ sr $3 
+ lb
+ sr $3 
+ li 16
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ lr $4 
+ add $3 
+ sr $4 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 20
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $5 
+ add $3 
+ sr $3 
+ lb
+ sr $3 
+ li 8
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ lr $4 
+ add $3 
+ sr $3 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $4 
+ li 20
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $5 
+ add $4 
+ sr $4 
+ lb
+ sr $4 
+ lr $3 
+ add $4 
+ sr $3 
+ li 12
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sw $2 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 16
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $4 
+ add $3 
+ sr $3 
+ li 12
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $4 
+ sw $3 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sw $2 
+DOL_L2:
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $4 
+ li 24
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ lr $4 
+ slt $3 
+ sr $3 
+ jt DOL_L3
+ li 16
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 16
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ lr $1 
+ j
+ .ent fact ###
+fact:
+ li -32
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lr $1 
+ sw $2 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lr $5 
+ sw $2 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ slt $2 
+ sr $3 
+ jf DOL_L6
+ li 1
+ sr $3 
+ mtlo $3 ###
+ li DOL_L7
+ sr $2 
+ j
+DOL_L6:
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li -1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ sr $5 
+ .ret L_0
+ li L_0
+ sr $1 
+ li fact
+ sr $2 
+ j
+L_0:
+ lr $3 
+ sr $4 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+DOL_L7:
+ lr $4 
+ mul $3 
+ sr $3 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $1 
+ li 32
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ lr $1 
+ j
+ .ent main ###
+main:
+ li -48
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ li 44
+ sr $2 
+ add $0 
+ sr $2 
+ lr $1 
+ sw $2 
+ li shift16lefthi16bitsIPROC
+ sr $3 
+ li low16bitsIPROC
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $4 
+ li 3
+ sr $3 
+ lr $4 
+ xor $3 
+ sr $2 
+ jt DOL_L9
+ li 98
+ sr $3 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ li 0x000000ff
+ sr $2 
+ and $3 
+ sr $3 
+ li -1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 0x00ff
+ sr $2 
+ lr $3 
+ and $2 
+ sr $3 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ sr $5 
+ .ret L_1
+ li L_1
+ sr $1 
+ li putchar
+ sr $2 
+ j
+L_1:
+ li DOL_L10
+ sr $2 
+ j
+DOL_L9:
+ li shift16lefthi16bitsIPROC
+ sr $3 
+ li low16bitsIPROC
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $4 
+ li 3
+ sr $3 
+ lr $4 
+ xor $3 
+ sr $2 
+ jt DOL_L11
+ li 97
+ sr $3 
+ li 33
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 33
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ li 0x000000ff
+ sr $2 
+ and $3 
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 0x00ff
+ sr $2 
+ lr $3 
+ and $2 
+ sr $3 
+ li 33
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 33
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ sr $5 
+ .ret L_2
+ li L_2
+ sr $1 
+ li putchar
+ sr $2 
+ j
+L_2:
+ li DOL_L10
+ sr $2 
+ j
+DOL_L11:
+ li shift16lefthi16bitsIPROC
+ sr $3 
+ li low16bitsIPROC
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $4 
+ li 4
+ sr $3 
+ lr $4 
+ xor $3 
+ sr $2 
+ jt DOL_L12
+ li 97
+ sr $3 
+ li 34
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 34
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ li 0x000000ff
+ sr $2 
+ and $3 
+ sr $3 
+ li 10
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 0x00ff
+ sr $2 
+ lr $3 
+ and $2 
+ sr $3 
+ li 34
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 34
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ li 0x000000ff
+ sr $2 
+ and $3 
+ sr $3 
+ li -8
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 0x00ff
+ sr $2 
+ lr $3 
+ and $2 
+ sr $3 
+ li 34
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sb $2 
+ li 34
+ sr $2 
+ add $0 
+ sr $2 
+ lb
+ sr $3 
+ sr $5 
+ .ret L_3
+ li L_3
+ sr $1 
+ li putchar
+ sr $2 
+ j
+L_3:
+ li DOL_L10
+ sr $2 
+ j
+DOL_L12:
+ li shift16lefthi16bitsIPROC
+ sr $3 
+ li low16bitsIPROC
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $4 
+ li 5
+ sr $3 
+ lr $4 
+ xor $3 
+ sr $2 
+ jt DOL_L13
+ li 6
+ sr $3 
+ li 36
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sw $2 
+ li 36
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $5 
+ .ret L_4
+ li L_4
+ sr $1 
+ li putint
+ sr $2 
+ j
+L_4:
+ li DOL_L10
+ sr $2 
+ j
+DOL_L13:
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ li 0
+ sw $2 
+ li DOL_L14
+ sr $2 
+ j
+DOL_L15:
+ li shift16lefthi16bitsIPROC
+ sr $3 
+ li low16bitsIPROC
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $4 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ lr $4 
+ xor $3 
+ sr $4 
+ li shift16lefthi16bitsMAXFAC
+ sr $3 
+ li low16bitsMAXFAC
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ jt MYLOCAL_0
+MYLOCAL_0:
+ lr $4 
+ rem $3 
+ sr $3 
+ sr $5 
+ .ret L_5
+ li L_5
+ sr $1 
+ li fact
+ sr $2 
+ j
+L_5:
+ li 24
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sw $2 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lr $3 
+ sw $2 
+DOL_L14:
+ li shift16lefthi16bitsMAXITER
+ sr $3 
+ li low16bitsMAXITER
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $4 
+ slt $3 
+ sr $3 
+ jt DOL_L15
+ li 24
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $5 
+ .ret L_6
+ li L_6
+ sr $1 
+ li putint
+ sr $2 
+ j
+L_6:
+DOL_L10:
+ lr $8 
+ sr $5 
+ .ret L_7
+ li L_7
+ sr $1 
+ li exit
+ sr $2 
+ j
+L_7:
+ .ent exit ###
+exit:
+ lr $5 
+ sw $0 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 3
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 16
+ sr $3 
+ li 0
+ sw $3 
+ li 20
+ sr $3 
+ lr $0 
+ lw
+ sr $4 
+ sw $3 
+ sys 0 ###
+ lr $1 
+ j
+ .ent time ###
+time:
+ lr $5 
+ sw $0 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 3
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 16
+ sr $3 
+ li 1
+ sr $4 
+ sw $3 
+ li 32
+ sr $3 
+ lr $0 
+ lw
+ sr $4 
+ sw $3 
+ sys 0 ###
+ li 16
+ sr $3 
+ lw
+ sr $3 
+ lr $1 
+ j
+ .ent dup ###
+dup:
+ lr $5 
+ sw $0 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 3
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 16
+ sr $3 
+ li 2
+ sr $4 
+ sw $3 
+ li 20
+ sr $3 
+ lr $0 
+ lw
+ sr $4 
+ sw $3 
+ sys 0 ###
+ li 16
+ sr $3 
+ lw
+ sr $3 
+ lr $1 
+ j
+ .ent putchar ###
+putchar:
+ lr $5 
+ sr $3 
+ sb $0 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 2
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 16
+ sr $3 
+ li 3
+ sr $4 
+ sw $3 
+ li 20
+ sr $3 
+ lr $0 
+ lb
+ sr $4 
+ sw $3 
+ sys 0 ###
+ lr $1 
+ j
+ .ent putint ###
+putint:
+ lr $5 
+ sw $0 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 2
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 16
+ sr $3 
+ li 9
+ sr $4 
+ sw $3 
+ li 20
+ sr $3 
+ lr $0 
+ lw
+ sr $4 
+ sw $3 
+ sys 0 ###
+ lr $1 
+ j
+ .ent getchar ###
+getchar:
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 2
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 16
+ sr $3 
+ li 4
+ sr $4 
+ sw $3 
+ sys 0 ###
+ li 16
+ sr $3 
+ lw
+ sr $3 
+ lr $1 
+ j
+ .ent open ###
+open:
+ lr $5 
+ sw $0 
+ li 4
+ sr $2 
+ add $0 
+ sr $2 
+ lr $6 
+ sw $2 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lr $7 
+ sw $2 
+ li 16
+ sr $3 
+ li 5
+ sr $4 
+ sw $3 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 1
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li DOL_L26
+ sr $2 
+ j
+DOL_L27:
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $5 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li -1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ lr $0 
+ lw
+ sr $4 
+ add $3 
+ sr $3 
+ lb
+ sr $3 
+ sw $5 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+DOL_L26:
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li -1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ lr $0 
+ lw
+ sr $4 
+ add $3 
+ sr $3 
+ lb
+ sr $3 
+ jt DOL_L27
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ li 0
+ sw $3 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ li 4
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ li 8
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ sys 0 ###
+ li 16
+ sr $3 
+ lw
+ sr $3 
+ lr $1 
+ j
+ .ent close ###
+close:
+ lr $5 
+ sw $0 
+ li 16
+ sr $3 
+ li 7
+ sr $4 
+ sw $3 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 1
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ lr $0 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li 1
+ sr $3 
+ lr $1 
+ j
+ .ent read ###
+read:
+ li -32
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lr $1 
+ sw $2 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lr $5 
+ sw $2 
+ li 36
+ sr $2 
+ add $0 
+ sr $2 
+ lr $6 
+ sw $2 
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lr $7 
+ sw $2 
+ li 16
+ sr $3 
+ li 7
+ sr $4 
+ sw $3 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 1
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ sys 0 ###
+ li 36
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $5 
+ li 16
+ sr $6 
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $7 
+ .ret L_8
+ li L_8
+ sr $1 
+ li memcpy
+ sr $2 
+ j
+L_8:
+ li 1
+ sr $3 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $1 
+ li 32
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ lr $1 
+ j
+ .ent write ###
+write:
+ li -32
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lr $1 
+ sw $2 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lr $5 
+ sw $2 
+ li 36
+ sr $2 
+ add $0 
+ sr $2 
+ lr $6 
+ sw $2 
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lr $7 
+ sw $2 
+ li 16
+ sr $3 
+ li 8
+ sr $4 
+ sw $3 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li 1
+ sr $4 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ li 32
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $4 
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ sw $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ li 4
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+ li 2
+ sr $2 
+ lr $3 
+ sll $2 
+ sr $3 
+ sr $5 
+ li 36
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $6 
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $7 
+ .ret L_9
+ li L_9
+ sr $1 
+ li memcpy
+ sr $2 
+ j
+L_9:
+ li 40
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $3 
+ bgez $3, DOL_L34 ###
+ li 3
+ sr $2 
+ lr $3 
+ add $2 
+ sr $3 
+DOL_L34:
+ li 2
+ sr $2 
+ lr $3 
+ sra $2 
+ sr $3 
+ li 1
+ sr $2 
+ lr $3 
+ add $2 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lw
+ sr $3 
+ lr $4 
+ add $3 
+ sr $4 
+ li shift16lefthi16bitsNSYSARGS
+ sr $3 
+ li low16bitsNSYSARGS
+ sr $2 
+ add $3 
+ sr $2 
+ lr $4 
+ sw $2 
+ sys 0 ###
+ li 16
+ sr $3 
+ lw
+ sr $3 
+ li 28
+ sr $2 
+ add $0 
+ sr $2 
+ lw
+ sr $1 
+ li 32
+ sr $2 
+ lr $0 
+ add $2 
+ sr $0 
+ lr $1 
+ j
