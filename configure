@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo 'Enter path to your Mentor Graphics Sourcery CodeBench installation
+(e.g. ~/CodeBench):'
+read CB_PATH
+sed "s:CODEBENCH_INSTALL_DIR=.*:CODEBENCH_INSTALL_DIR=${CB_PATH}:"\
+	<mogcc.template >mogcc
+
+echo 'Enter path to your Cuda installation (e.g. /usr/local/cuda-7.0):'
+read CUDA_PATH
+sed "s:CUDA_INSTALL_PATH ?= .*:CUDA_INSTALL_PATH ?= ${CUDA_PATH}:"\
+	<Makefile.template >Makefile
