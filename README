@@ -4,13 +4,13 @@ code(e.g. openMPI-like program) on a GPU(i.e. a SIMD machine). You will be somew
 restricted in what you can do, particularly when it comes to things like system
 calls. To get an idea of what's possible, check out the test programs: test.c
 and iotest.c. For piles of details, and a bit of history, start here:
-http://github.com/aggregate/MOG/docs
+https://github.com/aggregate/MOG/tree/master/docs
 
 QUICK START
 
 1. Install a c->mipsel cross compiler. I highly recommend following these
 instructions rather than trying to build your own from scratch, unless you are
-experienced at that sort of thing.
+experienced with that sort of thing.
    a) Go to https://sourcery.mentor.com/GNUToolchain/subscription3130?lite=MIPS
    and follow the link to the recommended release.
    b) Download the recommended package installer for GNU/Linux
