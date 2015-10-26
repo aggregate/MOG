@@ -1,10 +1,10 @@
 WHAT IS IT?
 MOG(MIMD On GPU) is a set of tools that allow the programmer to run their MIMD
-code(e.g. openMPI-like program) on a GPU(i.e. a SIMD machine). You will be somewhat
-restricted in what you can do, particularly when it comes to things like system
-calls. To get an idea of what's possible, check out the test programs: test.c
-and iotest.c. For piles of details, and a bit of history, start here:
-https://github.com/aggregate/MOG/tree/master/docs
+code(e.g. openMPI-like program) on a GPU(i.e. a SIMD machine). You will be
+somewhat restricted in what you can do, particularly when it comes to things
+like system calls. To get an idea of what's possible, check out the test
+programs: test.c and iotest.c. For piles of details, and a bit of history, start
+here: https://github.com/aggregate/MOG/tree/master/docs
 
 QUICK START
 
