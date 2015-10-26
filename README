@@ -1,102 +1,78 @@
-20101122 alpha test release
+WHAT IS IT?
+MOG(MIMD On GPU) is a set of tools that allow the programmer to run their MIMD
+code(e.g. openMPI-like program) on a GPU(i.e. a SIMD machine). You will be somewhat
+restricted in what you can do, particularly when it comes to things like system
+calls. To get an idea of what's possible, check out the test programs: test.c
+and iotest.c. For piles of details, and a bit of history, start here:
+http://github.com/aggregate/MOG/docs
 
+QUICK START
 
-This is a ***VERY*** preliminary alpha test release of the MIPS-based MOG.
-We do not suggest that it is useful for anything but getting a feel for how
-the system works, and THIS VERSION SHOULD NOT BE REDISTRIBUTED, but it will
-soon be followed by a useful version.
+1. Install a c->mipsel cross compiler. I highly recommend following these
+instructions rather than trying to build your own from scratch, unless you are
+experienced at that sort of thing.
+   a) Go to https://sourcery.mentor.com/GNUToolchain/subscription3130?lite=MIPS
+   and follow the link to the recommended release.
+   b) Download the recommended package installer for GNU/Linux
+   c) make the downloaded binary executable with:
+      chmod +x <downloaded-package.bin>
+   d) run the package: ./<downloaded-package.bin> and follow the installer
+   instructions. (make sure to note your install location)
 
-The original MOG versions were all based on a stack instruction set, which
-proved too difficult for other compilers to target. There were about 70K
-lines of source code in that system -- and about two dozen different
-versions trying a wide variety of optimization methods.  Some of the best
-of the methods tried are reported in our LCPC 2009 paper:
+2. Install CUDA for your distro from https://developer.nvidia.com/cuda-downloads
+(this isn't totally trivial, but tutorials are widely available). We've tested
+various versions from 4.0-7.0.
 
-http://www.springerlink.com/content/x3k8k3uw7j42j553/
+3. Get the MOG source:
+git clone https://github.com/aggregate/MOG
 
-For now, that's the reference to cite.
+4. In your downloaded source, configure MOG to point to your cross compiler and
+CUDA install:
+./configure
+then follow the prompts
+*If you built your own cross compiler, you will likely need to modify some
+arguments at the top of mogcc.
 
-The best of those methods is essentially what the new system implements;
-a series of single-instruction interpreters using an ordering that is
-automatically optimized for each application. However, unlike the version
-reported in the LCPC paper, this release uses static analysis rather than
-a runtime trace to collect instruction frequency and pairwise adjacency.
-The optimizer is greatly simplified too.
+5. Compile mogas:
+gcc mogas.c -o mogas.
 
-Like the earlier versions, the MOG interpreter itself is quite simple,
-complicated mostly by a 3-dimensional global memory layout that ensures
-all memory references are free of bank conflicts while avoiding the
-integer multiply that the obvious 2D layout would have needed for the
-address computations.
-
-The new MOG instruction set is accumulator based with general registers.
-This is a very effective model, allowing the accumulator to reside in an
-actual GPU register and dramatically simplifying instruction decoding.
-The "registers" are actually stored in local "shared" memory, again with
-a layout that ensures freedom from banking conflicts, and the compiler's
-effective use of registers thus produces good explicit management of the
-very scarce GPU local memory.
-
-The system currently does not support double-precision floats, because
-we strongly believe it is a mistake to use them (due to a memory layout
-that breaks the banking properties). For several years, we have had
-libraries that facilitate use of pairs of native floats instead.
-
-There is also now a framework for passing system calls between the GPU and
-the host. Just as a proof of concept as well as some system testing purposes, 
-we have provided support for some basic file I/O, which only requires the 
-inclusion of a special 'mog_syscall' header and footer(see test.c/iotest.c
-for examples).
-
-We are currently working on an OpenCL backend.
-
-INSTALLING THE SYSTEM
-Depending on your system, this may be very difficult. I recommend using arch; 
-there is a regularly updated cuda build in the official repo, and working cross 
-compilers in the AUR
-
-1. Install a c->mipsel cross compiler, then change the name in the
-   in the cross compiler invocation at the top of mogcc to your binary
-	 name.
-
-2. Compile mogas.  Just cc mogas.c -o mogas.
-
-3. Install CUDA on your system, then change the CUDA_INSTALL_PATH
-   variable in the Makefile to your install path. We have tested the 
-	 current system on various CUDA versions between 4.0-6.5.
-
-Note: Though not strictly necessary, you may also want to change the 
-GPU_MULTIPROCESSORS, GPU_WARPSIZE and GPU_THREADSPERBLOCK definitions at the top 
+Note: Though not strictly necessary, you may also want to change the
+GPU_MULTIPROCESSORS, GPU_WARPSIZE and GPU_THREADSPERBLOCK definitions at the top
 of mog.cu to match your system.
 
 RUNNING THE SYSTEM
 
-Given all that, the program test.c, which includes some basic file I/O,
-can be compiled into test.as by:
+1. For example, the program test.c, which includes some basic file I/O,
+can be compiled into test.as:
 
 ./mogcc test.c >test.as
 
-This actually runs GCC for MIPSEL and then translates the MIPS code into
+*This actually runs GCC for MIPSEL and then translates the MIPS code into
 our MOG instruction set using a series of sed/awk scripts. It's ugly, but
 GCC MIPSEL seems to have a lot of imaginary instructions in its output,
 so a better translator is postponed until we know what the full scope of
 instructions emitted by GCC MIPSEL is. There is a fair amount of stuff
 spewed to stderr while doing this.
 
-The next step is to run the assembler to generate the data files that
+2. The next step is to run the assembler to generate the data files that
 will be compiled into the simulator. For that, simply:
 
 ./mogas <test.as >mog.h
 
 The mog.h name is critical, because it gets compiled into the interpreter.
 
-To build the executable MOG, just type make. 
+3. To build the executable MOG, just type:
+make
 
-iotest.c similarly tests some basic file I/O.
+4. Now, run your program!
+./MOG
 
-If the TRACE flag is set,
+Congratulations, you made it. iotest.c similarly tests some basic file I/O. Play
+around with it, and tell us what you think.
+
+*If the TRACE flag is set,
 you'll get a tracer; otherwise, you get execution that executes many
-instructions per kernel invocation. Simply run:
+instructions per kernel invocation.
 
 CREDIT (BLAME?)
 
@@ -115,7 +91,7 @@ as a "toy" to let people see what we're doing... so they know we're
 serious about MOG and that it really does work.
 
 The author's contact info is:
-								      \_/		
+								      \_/
 Hank Dietz, Professor & James F. Hardymon Chair in Networking     \_/ . 0
 University of Kentucky, Electrical & Computer Engineering Dept.   O-O /v\
 453 F. Paul Anderson Tower                                        /v\// \\

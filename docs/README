@@ -1,0 +1,44 @@
+
+The original MOG versions were all based on a stack instruction set, which
+proved too difficult for other compilers to target. There were about 70K
+lines of source code in that system -- and about two dozen different
+versions trying a wide variety of optimization methods.  Some of the best
+of the methods tried are reported in our LCPC 2009 paper:
+
+http://www.springerlink.com/content/x3k8k3uw7j42j553/
+
+For now, that's the reference to cite.
+
+The best of those methods is essentially what the new system implements;
+a series of single-instruction interpreters using an ordering that is
+automatically optimized for each application. However, unlike the version
+reported in the LCPC paper, this release uses static analysis rather than
+a runtime trace to collect instruction frequency and pairwise adjacency.
+The optimizer is greatly simplified too.
+
+Like the earlier versions, the MOG interpreter itself is quite simple,
+complicated mostly by a 3-dimensional global memory layout that ensures
+all memory references are free of bank conflicts while avoiding the
+integer multiply that the obvious 2D layout would have needed for the
+address computations.
+
+The new MOG instruction set is accumulator based with general registers.
+This is a very effective model, allowing the accumulator to reside in an
+actual GPU register and dramatically simplifying instruction decoding.
+The "registers" are actually stored in local "shared" memory, again with
+a layout that ensures freedom from banking conflicts, and the compiler's
+effective use of registers thus produces good explicit management of the
+very scarce GPU local memory.
+
+The system currently does not support double-precision floats, because
+we strongly believe it is a mistake to use them (due to a memory layout
+that breaks the banking properties). For several years, we have had
+libraries that facilitate use of pairs of native floats instead.
+
+There is also now a framework for passing system calls between the GPU and
+the host. Just as a proof of concept as well as some system testing purposes, 
+we have provided support for some basic file I/O, which only requires the 
+inclusion of a special 'mog_syscall' header and footer(see test.c/iotest.c
+for examples).
+
+We are currently working on an OpenCL backend.
